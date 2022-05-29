@@ -13,16 +13,21 @@ local data = {
   initialItems = {},
 }
 
-local function dump(o)
-  if type(o) == 'table' then
-    local s = '{\n'
-    for k, v in pairs(o) do
-      if type(k) ~= 'number' then k = '"' .. k .. '"' end
-      s = s .. '\t[' .. k .. '] = ' .. dump(v) .. ',\n'
+local function dump(object, indentLevel)
+  if type(object) == 'table' then
+    indentLevel = indentLevel or 0
+    local indentStr = ''
+    for i = 1, indentLevel do
+      indentStr = indentStr .. '  '
     end
-    return s .. '}'
+    local s = '{\n'
+    for k, v in pairs(object) do
+      if type(k) ~= 'number' then k = '"' .. k .. '"' end
+      s = s .. indentStr .. '[' .. k .. '] = ' .. dump(v, indentLevel + 1) .. ',\n'
+    end
+    return s .. indentStr .. '}'
   else
-    return tostring(o)
+    return tostring(object)
   end
 end
 
