@@ -178,16 +178,10 @@ function mod:postUpdate()
   if (not data.initialItems[item.ID]) then return end
 
   Game():AddTreasureRoomsVisited()
-  --visitTrasureRoom()
 
-  --print('allowPickAnother:', data.allowPickAnother)
   if (data.allowPickAnother) then
     data.allowPickAnother = false
     data.initialItems[item.ID] = false
-    -- for _, position in ipairs(spawnPositions) do
-    --   local itemId = spawnItem(position)
-    --   data.initialItems[itemId] = true
-    -- end
     return
   end
 
