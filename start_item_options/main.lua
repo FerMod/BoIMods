@@ -206,8 +206,8 @@ local function fromJson()
   -- Load data from a file and parse it
   local jsonData = json.decode(mod:LoadData())
   local result = {
-    allowPickAnother = jsonData.allowPickAnother or data.allowPickAnother,
-    initialItems = {},
+    allowPickAnother = jsonData.allowPickAnother or false,
+    initialItems = jsonData.initialItems or {},
   }
   for _, value in ipairs(jsonData.initialItems) do
     result.initialItems[value] = true
