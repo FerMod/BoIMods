@@ -98,6 +98,7 @@ function mod:postNewLevel()
   if (not isNormalRun()) then return end
   if (not isFirstStage()) then return end
 
+  print('postNewLevel')
   data = {
     allowPickAnother = isCurseOfLabyrinth(),
     initialItems = {},
@@ -224,6 +225,7 @@ local function toJson()
 end
 
 function mod:loadData(isContinued)
+  print('isContinued: ', tostring(isContinued))
   if isContinued and mod:HasData() then
     data = fromJson()
   end
