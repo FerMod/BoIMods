@@ -175,7 +175,7 @@ function mod:postUpdate()
   if (player:IsItemQueueEmpty()) then return end
 
   local item = player.QueuedItem.Item
-  if (item:IsCollectible() and not data.initialItems[item.ID]) then return end
+  if (not data.initialItems[item.ID]) then return end
 
   Game():AddTreasureRoomsVisited()
   --visitTrasureRoom()
