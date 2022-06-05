@@ -106,9 +106,9 @@ end
 local function anyPlayerHasItem(itemId)
   local game = Game()
   local numPlayers = game:GetNumPlayers()
-  print('numPlayers', numPlayers)
+  debugPrint('numPlayers', numPlayers)
   for playerIndex = 0, numPlayers - 1 do
-    print('player', playerIndex)
+    debugPrint('player', playerIndex)
 
     if playerHasActive(playerIndex, itemId) == itemId then
       return true
@@ -156,9 +156,9 @@ local function spawnItem(position, optionGroupIndex)
   end
 
   local entity = spawnEntity()
-  --[[   print(entity.SubType)
+  --[[   debugPrint(entity.SubType)
   if (anyPlayerHasItem(entity.SubType)) then
-    print('Has item!', entity.SubType)
+    debugPrint('Has item!', entity.SubType)
     spawnEntity()
   end ]]
 
@@ -193,7 +193,7 @@ function mod:postNewLevel()
   if (not isNormalRun()) then return end
   if (not isFirstStage()) then return end
 
-  print('postNewLevel')
+  debugPrint('postNewLevel')
   data = {
     allowPickAnother = isCurseOfLabyrinth(),
     initialItems = {},
@@ -204,7 +204,7 @@ function mod:postNewLevel()
     data.initialItems[itemId] = true
   end
 
-  print(dump(data))
+  debugPrint(dump(data))
   mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.postUpdate)
 
 
@@ -235,9 +235,9 @@ function mod:removeTreasure()
   if (not isNormalRun()) then return end
   if (not isFirstStage()) then return end
   if (not isTreasureRoom()) then return end
-  print('IsFirstVisit', Game():GetRoom():IsFirstVisit())
+  debugPrint('IsFirstVisit', Game():GetRoom():IsFirstVisit())
   if (not Game():GetRoom():IsFirstVisit()) then return end
-  print('allowPickAnother', data.allowPickAnother)
+  debugPrint('allowPickAnother', data.allowPickAnother)
   if (data.allowPickAnother) then
     -- Dont let pick other treasure room collectible (if present)
     data.allowPickAnother = false
@@ -248,7 +248,7 @@ function mod:removeTreasure()
   local entities = Isaac.GetRoomEntities()
   for _, entity in ipairs(entities) do
     if isCollectible(entity) then
-      print(entity.SubType)
+      debugPrint(entity.SubType)
       entity:Remove()
     end
   end
@@ -277,7 +277,7 @@ function mod:postUpdate()
   -- Remove our spawned collectibles
   local entities = Isaac.GetRoomEntities()
   for _, entity in ipairs(entities) do
-    print(entity.Type, entity.Variant, entity.SubType, '|', isCollectible(entity), '|', data.initialItems[entity.SubType])
+    debugPrint(entity.Type, entity.Variant, entity.SubType, '|', isCollectible(entity), '|', data.initialItems[entity.SubType])
     if isCollectible(entity) and data.initialItems[entity.SubType] then
       entity:Remove()
     end
@@ -314,14 +314,14 @@ local function toJson()
 end
 
 function mod:loadData(isContinued)
-  print('isContinued: ', tostring(isContinued))
+  debugPrint('isContinued: ', tostring(isContinued))
   if isContinued and mod:HasData() then
     data = fromJson()
   end
 end
 
 function mod:saveData(shouldSave)
-  print('shouldSave: ', tostring(shouldSave))
+  debugPrint('shouldSave: ', tostring(shouldSave))
   if not shouldSave then return end
   toJson()
 end
