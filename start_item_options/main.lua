@@ -134,9 +134,9 @@ local function anyPlayerHasItem(itemId)
 end
 
 ---Returns the entity item config hash for the given `collectibleId`.
----@param collectibleId integer The collectible id. Sometimes referred as SubType.
+---@param collectibleId integer The collectible id. Sometimes also referred as `SubType`.
 ---@return integer hash Then entity item config hash.
-local function entityHash(collectibleId)
+local function entityHashCode(collectibleId)
   local itemConfig = Isaac.GetItemConfig():GetCollectible(collectibleId)
   return GetPtrHash(itemConfig)
 end
@@ -210,7 +210,7 @@ function mod:postNewLevel()
 
   for _, position in ipairs(spawnPositions) do
     local entity = spawnItem(position)
-    local itemConfigHash = entityHash(entity.SubType)
+    local itemConfigHash = entityHashCode(entity.SubType)
     debugPrint('Item(' .. tostring(itemConfigHash) .. '):', entity.SubType)
     data.initialItems[itemConfigHash] = true
   end
@@ -255,7 +255,7 @@ function mod:postUpdate()
   if (player:IsItemQueueEmpty()) then return end
 
   local item = player.QueuedItem.Item
-  local itemConfigHash = entityHash(item.ID)
+  local itemConfigHash = entityHashCode(item.ID)
   if (not data.initialItems[itemConfigHash]) then return end
   debugPrint('postUpdate GetPtrHash', itemConfigHash)
 
