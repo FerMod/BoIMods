@@ -13,6 +13,7 @@ local spawnPositions = {
 
 local data = {
   allowPickAnother = false,
+  hasSpawnedItems = false,
   initialItems = {},
 }
 
@@ -43,26 +44,9 @@ local function dump(object, indentLevel, indentStr)
   end
 end
 
----Check the level is of the same type the first level can be.
----@return boolean
-local function isFirstStageType()
-  local level = Game():GetLevel()
-  local stageType = level:GetStageType()
-  if (stageType == StageType.STAGETYPE_ORIGINAL) then
-    return true
-  end
-  if (stageType == StageType.STAGETYPE_WOTL) then
-    return true
-  end
-  if (stageType == StageType.STAGETYPE_AFTERBIRTH) then
-    return true
-  end
-  return false
-end
-
 ---Whether is the first stage of the run
 local function isFirstStage()
-  return Game():GetLevel():GetStage() == 1 and isFirstStageType()
+  return Game():GetLevel():GetStage() == 1
 end
 
 ---Wheter is the starting room
@@ -220,7 +204,11 @@ end
 ---Callback triggered after entering a new level.
 function mod:postNewLevel()
   if (not isNormalRun()) then return end
+  if (data.hasSpawnedItems) then return end
   if (not isFirstStage()) then return end
+
+  -- Prevent to spawn again items.
+  data.hasSpawnedItems = true;
 
   debugPrint('postNewLevel')
   data = {
@@ -295,6 +283,7 @@ function mod:fromJson()
   local jsonData = json.decode(mod:LoadData())
   local result = {
     allowPickAnother = jsonData.allowPickAnother or false,
+    hasSpawnedItems = data.hasSpawnedItems or false,
     initialItems = jsonData.initialItems or {},
   }
   for _, value in ipairs(jsonData.initialItems) do
@@ -308,6 +297,7 @@ end
 function mod:toJson()
   local jsonData = {
     allowPickAnother = data.allowPickAnother,
+    hasSpawnedItems = data.hasSpawnedItems,
     initialItems = {},
   }
   for key, _ in pairs(data.initialItems) do
