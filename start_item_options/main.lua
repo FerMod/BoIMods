@@ -43,9 +43,24 @@ local function dump(object, indentLevel, indentStr)
   end
 end
 
+local function isFirstStageType()
+  local level = Game():GetLevel()
+  local stageType = level:GetStageType()
+  if (stageType == StageType.STAGETYPE_ORIGINAL) then
+    return true
+  end
+  if (stageType == StageType.STAGETYPE_WOTL) then
+    return true
+  end
+  if (stageType == StageType.STAGETYPE_AFTERBIRTH) then
+    return true
+  end
+  return false
+end
+
 ---Whether is the first stage of the run
 local function isFirstStage()
-  return Game():GetLevel():GetStage() == 1
+  return Game():GetLevel():GetStage() == 1 and isFirstStageType()
 end
 
 ---Wheter is the starting room
