@@ -45,6 +45,13 @@ local function isFirstStage()
   return Game():GetLevel():GetStage() == 1
 end
 
+---Wheter is the starting room
+---@return boolean
+local function isStartingRoom()
+  local level = Game():GetLevel()
+  return level:GetCurrentRoomIndex() == level:GetStartingRoomIndex()
+end
+
 ---Whether is not in Greed mode or a challenge run
 local function isNormalRun()
   if (Game():IsGreedMode()) then
@@ -124,7 +131,6 @@ local function anyPlayerHasItem(itemId)
   end
 
   return false
-  -- return Isaac.GetPlayer():GetCollectibleNum(itemId, true) > 0;
 end
 
 local function spawnItem(position, optionGroupIndex)
@@ -200,6 +206,7 @@ function mod:removeTreasure()
   if (not isNormalRun()) then return end
   if (not isFirstStage()) then return end
   if (not isTreasureRoom()) then return end
+
   debugPrint('IsFirstVisit', Game():GetRoom():IsFirstVisit())
   if (not Game():GetRoom():IsFirstVisit()) then return end
   debugPrint('allowPickAnother', data.allowPickAnother)
@@ -224,6 +231,7 @@ end
 function mod:postUpdate()
   if (not isNormalRun()) then return end
   if (not isFirstStage()) then return end
+  if (not isStartingRoom()) then return end
 
   local player = Isaac.GetPlayer()
   if (player:IsItemQueueEmpty()) then return end
