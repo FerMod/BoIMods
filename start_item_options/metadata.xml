@@ -3,7 +3,7 @@
     <name>Start Item Options</name>
     <directory>start_item_options</directory>
     <id>0</id>
-    <description>This mod adds in the in the starting room, four items to choose from.</description>
+    <description>This mod adds four items to choose from in the starting room. Beacause of this, the item of the treasure room of the first level is removed. When the level has the 'Curse Of Labyrinth', the second treasure room that is entered will be always be empty.</description>
     <version>1.0</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
