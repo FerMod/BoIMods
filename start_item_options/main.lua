@@ -230,7 +230,7 @@ function mod:removeTreasure()
 
   debugPrint('IsFirstVisit', Game():GetRoom():IsFirstVisit())
   if (not Game():GetRoom():IsFirstVisit()) then return end
-  debugPrint('allowPickAnother', data.allowPickAnother)
+  debugPrint('removeTreasure allowPickAnother', data.allowPickAnother)
   if (data.allowPickAnother) then
     -- Dont let pick other treasure room collectible (if present)
     data.allowPickAnother = false
@@ -263,22 +263,12 @@ function mod:postUpdate()
 
   Game():AddTreasureRoomsVisited()
 
+  debugPrint('postUpdate allowPickAnother', data.allowPickAnother)
   if (data.allowPickAnother) then
-    data.allowPickAnother = false
     data.initialItems[itemConfigHash] = false
     return
   end
 
-  --[[
-  -- Remove our spawned collectibles
-  local entities = Isaac.GetRoomEntities()
-  for _, entity in ipairs(entities) do
-    debugPrint(entity.Type, entity.Variant, entity.SubType, '|', isCollectible(entity), '|', data.initialItems[entity.SubType])
-    if isCollectible(entity) and data.initialItems[entity.SubType] then
-      entity:Remove()
-    end
-  end
-  ]]
   mod:RemoveCallback(ModCallbacks.MC_POST_UPDATE, mod.postUpdate)
 end
 
