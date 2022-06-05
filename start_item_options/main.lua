@@ -133,10 +133,18 @@ local function anyPlayerHasItem(itemId)
   return false
 end
 
+---Returns the entity item config hash for the given `collectibleId`.
+---@param collectibleId integer The collectible id. Sometimes referred as SubType.
+---@return integer hash Then entity item config hash.
+local function entityHash(collectibleId)
+  local itemConfig = Isaac.GetItemConfig():GetCollectible(collectibleId)
+  return GetPtrHash(itemConfig)
+end
+
 ---Spawn an item in the given `position` with an optional group index parameter.
 ---@param position Vector The position where the item should be spawned.
 ---@param optionGroupIndex integer? The option group index of the item. Defaults to 1.
----@return integer id The spawned item id.
+---@return Entity entity The spawned entity.
 local function spawnItem(position, optionGroupIndex)
   optionGroupIndex = optionGroupIndex or 1
 
@@ -148,8 +156,10 @@ local function spawnItem(position, optionGroupIndex)
     game:GetRoom():GetSpawnSeed()
   )
 
-  -- Anonymous function that spawns an item with the given id.
-  -- If no id is given a random item is spawned.
+  ---Anonymous function that spawns an item with the given `id`.
+  ---If no id is given a random item is spawned.
+  ---@param id integer? Defaults to 0.
+  ---@return Entity
   local spawnEntity = function(id)
     local subType = id or CollectibleType.COLLECTIBLE_NULL
     return game:Spawn(
@@ -167,13 +177,13 @@ local function spawnItem(position, optionGroupIndex)
   debugPrint(entity.SubType)
   if (anyPlayerHasItem(entity.SubType)) then
     debugPrint('Has item!', entity.SubType)
-    spawnEntity()
+    entity = spawnEntity()
   end
 
   if (optionGroupIndex) then
     entity:ToPickup().OptionsPickupIndex = optionGroupIndex
   end
-  return entity.SubType
+  return entity
 end
 
 -- Remove all collectibles from room
@@ -199,8 +209,10 @@ function mod:postNewLevel()
   }
 
   for _, position in ipairs(spawnPositions) do
-    local itemId = spawnItem(position)
-    data.initialItems[itemId] = true
+    local entity = spawnItem(position)
+    local itemConfigHash = entityHash(entity.SubType)
+    debugPrint('Item(' .. tostring(itemConfigHash) .. '):', entity.SubType)
+    data.initialItems[itemConfigHash] = true
   end
 
   debugPrint(dump(data))
@@ -243,13 +255,15 @@ function mod:postUpdate()
   if (player:IsItemQueueEmpty()) then return end
 
   local item = player.QueuedItem.Item
-  if (not data.initialItems[item.ID]) then return end
+  local itemConfigHash = entityHash(item.ID)
+  if (not data.initialItems[itemConfigHash]) then return end
+  debugPrint('postUpdate GetPtrHash', itemConfigHash)
 
   Game():AddTreasureRoomsVisited()
 
   if (data.allowPickAnother) then
     data.allowPickAnother = false
-    data.initialItems[item.ID] = false
+    data.initialItems[itemConfigHash] = false
     return
   end
 
