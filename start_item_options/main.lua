@@ -242,7 +242,6 @@ function mod:removeTreasure()
       entity:Remove()
     end
   end
-
 end
 
 ---Callback function that handles when the player has picked up an item.
@@ -256,8 +255,8 @@ function mod:postUpdate()
 
   local item = player.QueuedItem.Item
   local itemConfigHash = entityHashCode(item.ID)
+  debugPrint('postUpdate initialItem[' .. itemConfigHash .. ']', data.initialItems[itemConfigHash])
   if (not data.initialItems[itemConfigHash]) then return end
-  debugPrint('postUpdate GetPtrHash', itemConfigHash)
 
   Game():AddTreasureRoomsVisited()
 
