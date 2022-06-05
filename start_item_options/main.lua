@@ -133,6 +133,10 @@ local function anyPlayerHasItem(itemId)
   return false
 end
 
+---Spawn an item in the given `position` with an optional group index parameter.
+---@param position Vector The position where the item should be spawned.
+---@param optionGroupIndex integer? The option group index of the item. Defaults to 1.
+---@return integer id The spawned item id.
 local function spawnItem(position, optionGroupIndex)
   optionGroupIndex = optionGroupIndex or 1
 
@@ -144,6 +148,8 @@ local function spawnItem(position, optionGroupIndex)
     game:GetRoom():GetSpawnSeed()
   )
 
+  -- Anonymous function that spawns an item with the given id.
+  -- If no id is given a random item is spawned.
   local spawnEntity = function(id)
     local subType = id or CollectibleType.COLLECTIBLE_NULL
     return game:Spawn(
