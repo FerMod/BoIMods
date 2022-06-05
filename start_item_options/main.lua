@@ -1,12 +1,6 @@
 local json = require("json")
 local mod = RegisterMod("Start Item Options", 1)
 
-local debug = true
-local function debugPrint(...)
-  if (not debug) then return end
-  print(...)
-end
-
 local spawnPositions = {
   Vector(250, 300),
   Vector(200, 400),
@@ -19,6 +13,11 @@ local data = {
   initialItems = {},
 }
 
+local debug = true
+local function debugPrint(...)
+  if (not debug) then return end
+  print(...)
+end
 
 local function dump(object, indentLevel, indentStr)
   if type(object) == 'table' then
@@ -41,12 +40,12 @@ local function dump(object, indentLevel, indentStr)
   end
 end
 
---- Whether is the first stage of the run
+---Whether is the first stage of the run
 local function isFirstStage()
   return Game():GetLevel():GetStage() == 1
 end
 
---- Whether is not in Greed mode or a challenge run
+---Whether is not in Greed mode or a challenge run
 local function isNormalRun()
   if (Game():IsGreedMode()) then
     return false
@@ -58,7 +57,7 @@ local function isNormalRun()
   return true
 end
 
---- Whether the current room is a treasure room
+---Whether the current room is a treasure room
 local function isTreasureRoom()
   return Game():GetLevel():GetCurrentRoom():GetType() == RoomType.ROOM_TREASURE
 end
@@ -68,10 +67,15 @@ local function shouldRemoveCollectible()
   return Game():GetRoom():IsFirstVisit() and data.allowPickAnother
 end
 
+---Whether the given `entity` is a collectible.
+---@param entity Entity
+---@return boolean
 local function isCollectible(entity)
   return entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == PickupVariant.PICKUP_COLLECTIBLE
 end
 
+---Whether the current level has the curse 'Curse Of Labyrinth' active.
+---@return boolean
 local function isCurseOfLabyrinth()
   local curse = Game():GetLevel():GetCurses()
   return (curse & LevelCurse.CURSE_OF_LABYRINTH) == LevelCurse.CURSE_OF_LABYRINTH
@@ -124,6 +128,8 @@ local function anyPlayerHasItem(itemId)
 end
 
 local function spawnItem(position, optionGroupIndex)
+  optionGroupIndex = optionGroupIndex or 1
+
   local game = Game()
   local itemPool = game:GetItemPool()
   local collectibleId = itemPool:GetCollectible(
@@ -141,36 +147,16 @@ local function spawnItem(position, optionGroupIndex)
       Vector.Zero, -- Velocity
       nil, -- Parent
       subType, -- SubType
-      game:GetRoom():GetSpawnSeed()-- Seed (the "GetSpawnSeed()" function gets a reproducible seed based on the room, e.g. "2496979501")
+      game:GetRoom():GetSpawnSeed()-- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
     )
-    --[[
-    return Isaac.Spawn(
-      EntityType.ENTITY_PICKUP, -- Type
-      PickupVariant.PICKUP_COLLECTIBLE, -- Variant
-      id, -- SubType
-      position, -- Position
-      Vector.Zero, -- Velocity
-      nil-- Spawner
-    )
-    ]]
   end
 
   local entity = spawnEntity()
-  --[[   debugPrint(entity.SubType)
+  debugPrint(entity.SubType)
   if (anyPlayerHasItem(entity.SubType)) then
     debugPrint('Has item!', entity.SubType)
     spawnEntity()
-  end ]]
-
-
-  -- local entity = Isaac.Spawn(
-  --   EntityType.ENTITY_PICKUP,
-  --   PickupVariant.PICKUP_COLLECTIBLE,
-  --   collectibleId, -- 0
-  --   position,
-  --   Vector.Zero,
-  --   nil
-  -- )
+  end
 
   if (optionGroupIndex) then
     entity:ToPickup().OptionsPickupIndex = optionGroupIndex
@@ -189,6 +175,7 @@ local function removeItems(whereCallback)
   end
 end
 
+---Callback triggered after entering a new level.
 function mod:postNewLevel()
   if (not isNormalRun()) then return end
   if (not isFirstStage()) then return end
@@ -200,37 +187,15 @@ function mod:postNewLevel()
   }
 
   for _, position in ipairs(spawnPositions) do
-    local itemId = spawnItem(position, 1)
+    local itemId = spawnItem(position)
     data.initialItems[itemId] = true
   end
 
   debugPrint(dump(data))
   mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.postUpdate)
-
-
-  --[[  for _, position in ipairs(spawnPositions) do
-    local collectibleID = itemPool:GetCollectible(
-      ItemPoolType.POOL_TREASURE,
-      true,
-      Game():GetRoom():GetSpawnSeed()
-    )
-    local entity = Isaac.Spawn(
-      EntityType.ENTITY_PICKUP,
-      PickupVariant.PICKUP_COLLECTIBLE,
-      -- collectibleID
-      0,
-      position,
-      Vector.Zero,
-      nil
-    )
-    entity:ToPickup().OptionsPickupIndex = 1
-
-    -- local collectibleID = entity.SubType
-    data.initialItems[collectibleID] = true
-  end ]]
-
 end
 
+---Callback function to remove collectibles from a treasure room.
 function mod:removeTreasure()
   if (not isNormalRun()) then return end
   if (not isFirstStage()) then return end
@@ -248,13 +213,14 @@ function mod:removeTreasure()
   local entities = Isaac.GetRoomEntities()
   for _, entity in ipairs(entities) do
     if isCollectible(entity) then
-      debugPrint(entity.SubType)
+      debugPrint('Removing', entity.SubType, 'from treasure room...')
       entity:Remove()
     end
   end
 
 end
 
+---Callback function that handles when the player has picked up an item.
 function mod:postUpdate()
   if (not isNormalRun()) then return end
   if (not isFirstStage()) then return end
@@ -286,7 +252,8 @@ function mod:postUpdate()
   mod:RemoveCallback(ModCallbacks.MC_POST_UPDATE, mod.postUpdate)
 end
 
-local function fromJson()
+---Parse mod data from a json and load it.
+function mod:fromJson()
   -- Load data from a file and parse it
   local jsonData = json.decode(mod:LoadData())
   local result = {
@@ -300,7 +267,8 @@ local function fromJson()
   return result
 end
 
-local function toJson()
+---Parse mod data to a json and save it.
+function mod:toJson()
   local jsonData = {
     allowPickAnother = data.allowPickAnother,
     initialItems = {},
@@ -313,17 +281,21 @@ local function toJson()
   mod:SaveData(json.encode(jsonData))
 end
 
+---Load stored mod data.
+---@param isContinued boolean Is continuing from a savestate.
 function mod:loadData(isContinued)
   debugPrint('isContinued: ', tostring(isContinued))
   if isContinued and mod:HasData() then
-    data = fromJson()
+    data = mod:fromJson()
   end
 end
 
+---Save mod data to a file.
+---@param shouldSave boolean Whether the data should be saved to a file.
 function mod:saveData(shouldSave)
   debugPrint('shouldSave: ', tostring(shouldSave))
-  if not shouldSave then return end
-  toJson()
+  if shouldSave then return end
+  mod:toJson()
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadData)
