@@ -43,6 +43,8 @@ local function dump(object, indentLevel, indentStr)
   end
 end
 
+---Check the level is of the same type the first level can be.
+---@return boolean
 local function isFirstStageType()
   local level = Game():GetLevel()
   local stageType = level:GetStageType()
