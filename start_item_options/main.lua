@@ -137,7 +137,6 @@ function mod:postNewLevel()
 end
 
 function mod:removeTreasure()
-  -- Game():GetHUD():ShowItemText('JUAN', 'Pinta dibujos, se quita neuronas')
   if (not isNormalRun()) then return end
   if (not isFirstStage()) then return end
   if (not isTreasureRoom()) then return end
@@ -150,22 +149,6 @@ function mod:removeTreasure()
     end
   end
 
-end
-
-local function visitTrasureRoom()
-  local level = Game():GetLevel()
-  local roomList = level:GetRooms()
-  for i = 0, #roomList - 1 do
-    local room = roomList:Get(i)
-    if (room.Data.Type == RoomType.ROOM_TREASURE and not room.Clear) then
-      local writableRoomDesc = level:GetRoomByIdx(i)
-      print('Clear:', writableRoomDesc.Clear, 'VisitedCount:', writableRoomDesc.VisitedCount)
-      writableRoomDesc.VisitedCount = 1 --tonumber(writableRoomDesc.VisitedCount) + 1
-      writableRoomDesc.Clear = true
-      level:GetCurrentRoom():Update()
-      print('room Clear:', room.Clear, 'room VisitedCount:', room.VisitedCount, 'visited', Game():GetTreasureRoomVisitCount())
-    end
-  end
 end
 
 function mod:postUpdate()
