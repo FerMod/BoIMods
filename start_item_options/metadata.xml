@@ -1,11 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <metadata>
-	<name>Start Item Options</name>
-	<directory>start_item_options</directory>
-	<description>This mod adds in the in the starting room, four items to choose from.</description>
-	<version>1.0</version>
-	<visibility>Public</visibility>
-	<tag id="Lua"/>
-	<tag id="Items"/>
-	<tag id="Tweaks"/>
+    <name>Start Item Options</name>
+    <directory>start_item_options</directory>
+    <id>0</id>
+    <description>This mod adds in the in the starting room, four items to choose from.</description>
+    <version>1.0</version>
+    <visibility>Public</visibility>
+    <tag id="Lua"/>
+    <tag id="Items"/>
+    <tag id="Tweaks"/>
 </metadata>
-
