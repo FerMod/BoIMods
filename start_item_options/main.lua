@@ -1,3 +1,6 @@
+-- Author:      FerMod
+-- Source Code: https://github.com/FerMod/BoIMods
+
 local json = require("json")
 local mod = RegisterMod("Start Item Options", 1)
 
