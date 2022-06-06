@@ -13,10 +13,11 @@ local spawnPositions = {
 
 local data = {
   allowPickAnother = false,
+  hasSpawnedItems = false,
   initialItems = {},
 }
 
-local debug = false
+local debug = true
 local function debugPrint(...)
   if (not debug) then return end
   print(...)
@@ -43,48 +44,39 @@ local function dump(object, indentLevel, indentStr)
   end
 end
 
----Check the level is of the same type the first level can be.
----@return boolean
-local function isFirstStageType()
-  local level = Game():GetLevel()
-  local stageType = level:GetStageType()
-  if (stageType == StageType.STAGETYPE_ORIGINAL) then
-    return true
-  end
-  if (stageType == StageType.STAGETYPE_WOTL) then
-    return true
-  end
-  if (stageType == StageType.STAGETYPE_AFTERBIRTH) then
-    return true
-  end
-  return false
-end
-
----Whether is the first stage of the run
+---Whether is the first stage of the run and is not `Ascent` or an alternative stage.
 local function isFirstStage()
-  return Game():GetLevel():GetStage() == 1 and isFirstStageType()
+  local level = Game():GetLevel()
+  if (level:IsAltStage()) then
+    return false
+  end
+  if (level:IsAscent()) then
+    return false
+  end
+  return level:GetStage() == 1
 end
 
----Wheter is the starting room
+---Wheter is the starting room.
 ---@return boolean
 local function isStartingRoom()
   local level = Game():GetLevel()
   return level:GetCurrentRoomIndex() == level:GetStartingRoomIndex()
 end
 
----Whether is not in Greed mode or a challenge run
+---Whether is not in Greed mode or a challenge run.
 local function isNormalRun()
-  if (Game():IsGreedMode()) then
+  local game = Game()
+  if (game:IsGreedMode()) then
     return false
   end
-  if (Game().Challenge ~= Challenge.CHALLENGE_NULL) then
+  if (game.Challenge ~= Challenge.CHALLENGE_NULL) then
     return false
   end
 
   return true
 end
 
----Whether the current room is a treasure room
+---Whether the current room is a treasure room.
 local function isTreasureRoom()
   return Game():GetLevel():GetCurrentRoom():GetType() == RoomType.ROOM_TREASURE
 end
@@ -113,9 +105,9 @@ end
 ---@param itemId integer
 ---@return boolean
 local function playerHasActive(playerIndex, itemId)
-  local player = Isaac.GetPlayer(playerIndex)
-  for index = 0, 3 do
-    if player:GetActiveItem(index) == itemId then
+  local player = Game():GetPlayer(playerIndex)
+  for _, value in pairs(ActiveSlot) do
+    if player:GetActiveItem(value) == itemId then
       return true
     end
   end
@@ -127,7 +119,7 @@ end
 ---@param itemId integer
 ---@return boolean
 local function playerHasCollectible(playerIndex, itemId)
-  local player = Isaac.GetPlayer(playerIndex)
+  local player = Game():GetPlayer(playerIndex)
   return player:HasCollectible(itemId)
 end
 
@@ -206,7 +198,7 @@ local function spawnItem(position, optionGroupIndex)
   return entity
 end
 
--- Remove all collectibles from room
+-- Remove all collectibles from room.
 local function removeItems(whereCallback)
   whereCallback = whereCallback or true
   local entities = Isaac.GetRoomEntities()
@@ -220,7 +212,11 @@ end
 ---Callback triggered after entering a new level.
 function mod:postNewLevel()
   if (not isNormalRun()) then return end
+  if (data.hasSpawnedItems) then return end
   if (not isFirstStage()) then return end
+
+  -- Prevent to spawn again items.
+  data.hasSpawnedItems = true;
 
   debugPrint('postNewLevel')
   data = {
@@ -264,13 +260,10 @@ function mod:removeTreasure()
   end
 end
 
----Callback function that handles when the player has picked up an item.
-function mod:postUpdate()
-  if (not isNormalRun()) then return end
-  if (not isFirstStage()) then return end
-  if (not isStartingRoom()) then return end
-
-  local player = Isaac.GetPlayer()
+---Check if the player has picked up any item and handle it if its one of the starting items.
+---Does nothing if the player has not picked up any.
+---@param player EntityPlayer The player entity.
+local function handlePickedUpItem(player)
   if (player:IsItemQueueEmpty()) then return end
 
   local item = player.QueuedItem.Item
@@ -289,12 +282,28 @@ function mod:postUpdate()
   mod:RemoveCallback(ModCallbacks.MC_POST_UPDATE, mod.postUpdate)
 end
 
+---Callback function that handles when the player has picked up an item.
+function mod:postUpdate()
+  if (not isNormalRun()) then return end
+  if (not isFirstStage()) then return end
+  if (not isStartingRoom()) then return end
+
+  local game = Game()
+  local numPlayers = game:GetNumPlayers()
+  for playerIndex = 0, numPlayers - 1 do
+    local player = Isaac.GetPlayer(playerIndex)
+    debugPrint('Player', playerIndex, 'IsItemQueueEmpty', player:IsItemQueueEmpty())
+    handlePickedUpItem(player)
+  end
+end
+
 ---Parse mod data from a json and load it.
 function mod:fromJson()
   -- Load data from a file and parse it
   local jsonData = json.decode(mod:LoadData())
   local result = {
     allowPickAnother = jsonData.allowPickAnother or false,
+    hasSpawnedItems = data.hasSpawnedItems or false,
     initialItems = jsonData.initialItems or {},
   }
   for _, value in ipairs(jsonData.initialItems) do
@@ -308,6 +317,7 @@ end
 function mod:toJson()
   local jsonData = {
     allowPickAnother = data.allowPickAnother,
+    hasSpawnedItems = data.hasSpawnedItems,
     initialItems = {},
   }
   for key, _ in pairs(data.initialItems) do
