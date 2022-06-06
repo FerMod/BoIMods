@@ -17,7 +17,7 @@ local data = {
   initialItems = {},
 }
 
-local debug = false
+local debug = true
 local function debugPrint(...)
   if (not debug) then return end
   print(...)
@@ -44,9 +44,16 @@ local function dump(object, indentLevel, indentStr)
   end
 end
 
----Whether is the first stage of the run
+---Whether is the first stage of the run and is not `Ascent` or an alternative stage.
 local function isFirstStage()
-  return Game():GetLevel():GetStage() == 1
+  local level = Game():GetLevel()
+  if (level:IsAltStage()) then
+    return false
+  end
+  if (level:IsAscent()) then
+    return false
+  end
+  return level:GetStage() == 1
 end
 
 ---Wheter is the starting room
@@ -58,10 +65,11 @@ end
 
 ---Whether is not in Greed mode or a challenge run
 local function isNormalRun()
-  if (Game():IsGreedMode()) then
+  local game = Game()
+  if (game:IsGreedMode()) then
     return false
   end
-  if (Game().Challenge ~= Challenge.CHALLENGE_NULL) then
+  if (game.Challenge ~= Challenge.CHALLENGE_NULL) then
     return false
   end
 
@@ -97,9 +105,9 @@ end
 ---@param itemId integer
 ---@return boolean
 local function playerHasActive(playerIndex, itemId)
-  local player = Isaac.GetPlayer(playerIndex)
-  for index = 0, 3 do
-    if player:GetActiveItem(index) == itemId then
+  local player = Game():GetPlayer(playerIndex)
+  for _, value in pairs(ActiveSlot) do
+    if player:GetActiveItem(value) == itemId then
       return true
     end
   end
@@ -111,7 +119,7 @@ end
 ---@param itemId integer
 ---@return boolean
 local function playerHasCollectible(playerIndex, itemId)
-  local player = Isaac.GetPlayer(playerIndex)
+  local player = Game():GetPlayer(playerIndex)
   return player:HasCollectible(itemId)
 end
 
