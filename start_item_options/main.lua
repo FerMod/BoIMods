@@ -56,14 +56,14 @@ local function isFirstStage()
   return level:GetStage() == 1
 end
 
----Wheter is the starting room
+---Wheter is the starting room.
 ---@return boolean
 local function isStartingRoom()
   local level = Game():GetLevel()
   return level:GetCurrentRoomIndex() == level:GetStartingRoomIndex()
 end
 
----Whether is not in Greed mode or a challenge run
+---Whether is not in Greed mode or a challenge run.
 local function isNormalRun()
   local game = Game()
   if (game:IsGreedMode()) then
@@ -76,7 +76,7 @@ local function isNormalRun()
   return true
 end
 
----Whether the current room is a treasure room
+---Whether the current room is a treasure room.
 local function isTreasureRoom()
   return Game():GetLevel():GetCurrentRoom():GetType() == RoomType.ROOM_TREASURE
 end
@@ -198,7 +198,7 @@ local function spawnItem(position, optionGroupIndex)
   return entity
 end
 
--- Remove all collectibles from room
+-- Remove all collectibles from room.
 local function removeItems(whereCallback)
   whereCallback = whereCallback or true
   local entities = Isaac.GetRoomEntities()
