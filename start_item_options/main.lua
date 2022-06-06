@@ -50,7 +50,7 @@ local function isFirstStage()
   if (level:IsAscent()) then
     return false
   end
-  return level:GetStage() == 1
+  return level:GetStage() == LevelStage.STAGE1_1
 end
 
 ---Wheter is the starting room.
