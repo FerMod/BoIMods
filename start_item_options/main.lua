@@ -252,13 +252,10 @@ function mod:removeTreasure()
   end
 end
 
----Callback function that handles when the player has picked up an item.
-function mod:postUpdate()
-  if (not isNormalRun()) then return end
-  if (not isFirstStage()) then return end
-  if (not isStartingRoom()) then return end
-
-  local player = Isaac.GetPlayer()
+---Check if the player has picked up any item and handle it if its one of the starting items.
+---Does nothing if the player has not picked up any.
+---@param player EntityPlayer The player entity.
+local function handlePickedUpItem(player)
   if (player:IsItemQueueEmpty()) then return end
 
   local item = player.QueuedItem.Item
@@ -275,6 +272,21 @@ function mod:postUpdate()
   end
 
   mod:RemoveCallback(ModCallbacks.MC_POST_UPDATE, mod.postUpdate)
+end
+
+---Callback function that handles when the player has picked up an item.
+function mod:postUpdate()
+  if (not isNormalRun()) then return end
+  if (not isFirstStage()) then return end
+  if (not isStartingRoom()) then return end
+
+  local game = Game()
+  local numPlayers = game:GetNumPlayers()
+  for playerIndex = 0, numPlayers - 1 do
+    local player = Isaac.GetPlayer(playerIndex)
+    debugPrint('Player', playerIndex, 'IsItemQueueEmpty', player:IsItemQueueEmpty())
+    handlePickedUpItem(player)
+  end
 end
 
 ---Parse mod data from a json and load it.
