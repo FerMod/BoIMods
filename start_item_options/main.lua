@@ -44,12 +44,9 @@ local function dump(object, indentLevel, indentStr)
   end
 end
 
----Whether is the first stage of the run and is not `Ascent` or an alternative stage.
+---Whether is the first stage of the run and is not `Ascent`.
 local function isFirstStage()
   local level = Game():GetLevel()
-  if (level:IsAltStage()) then
-    return false
-  end
   if (level:IsAscent()) then
     return false
   end
@@ -79,11 +76,6 @@ end
 ---Whether the current room is a treasure room.
 local function isTreasureRoom()
   return Game():GetLevel():GetCurrentRoom():GetType() == RoomType.ROOM_TREASURE
-end
-
-local function shouldRemoveCollectible()
-  if not isTreasureRoom() then return false end
-  return Game():GetRoom():IsFirstVisit() and data.allowPickAnother
 end
 
 ---Whether the given `entity` is a collectible.
