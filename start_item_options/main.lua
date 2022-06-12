@@ -283,7 +283,7 @@ function mod:fromJson()
   local jsonData = json.decode(mod:LoadData())
   local result = {
     allowPickAnother = jsonData.allowPickAnother or false,
-    hasSpawnedItems = data.hasSpawnedItems or false,
+    hasSpawnedItems = jsonData.hasSpawnedItems or false,
     initialItems = jsonData.initialItems or {},
   }
   for _, value in ipairs(jsonData.initialItems) do
