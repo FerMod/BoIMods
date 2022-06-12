@@ -17,7 +17,7 @@ local data = {
   initialItems = {},
 }
 
-local debug = true
+local debug = false
 local function debugPrint(...)
   if (not debug) then return end
   print(...)
