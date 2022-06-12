@@ -97,12 +97,18 @@ end
 ---@param itemId integer
 ---@return boolean
 local function playerHasActive(playerIndex, itemId)
+  -- The enum ActiveSlot is only present in Rep
+  if (not ActiveSlot) then
+    return false
+  end
+
   local player = Game():GetPlayer(playerIndex)
   for _, value in pairs(ActiveSlot) do
     if player:GetActiveItem(value) == itemId then
       return true
     end
   end
+
   return false
 end
 
