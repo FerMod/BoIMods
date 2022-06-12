@@ -17,7 +17,7 @@ local data = {
   initialItems = {},
 }
 
-local debug = true
+local debug = false
 local function debugPrint(...)
   if (not debug) then return end
   print(...)
@@ -50,7 +50,7 @@ local function isFirstStage()
   if (level:IsAscent()) then
     return false
   end
-  return level:GetStage() == 1
+  return level:GetStage() == LevelStage.STAGE1_1
 end
 
 ---Wheter is the starting room.
@@ -97,12 +97,18 @@ end
 ---@param itemId integer
 ---@return boolean
 local function playerHasActive(playerIndex, itemId)
+  -- The enum ActiveSlot is only present in Rep
+  if (not ActiveSlot) then
+    return false
+  end
+
   local player = Game():GetPlayer(playerIndex)
   for _, value in pairs(ActiveSlot) do
     if player:GetActiveItem(value) == itemId then
       return true
     end
   end
+
   return false
 end
 
@@ -152,20 +158,13 @@ end
 local function spawnItem(position, optionGroupIndex)
   optionGroupIndex = optionGroupIndex or 1
 
-  local game = Game()
-  local itemPool = game:GetItemPool()
-  local collectibleId = itemPool:GetCollectible(
-    ItemPoolType.POOL_TREASURE,
-    false,
-    game:GetRoom():GetSpawnSeed()
-  )
-
   ---Anonymous function that spawns an item with the given `id`.
   ---If no id is given a random item is spawned.
   ---@param id integer? Defaults to 0.
   ---@return Entity
   local spawnEntity = function(id)
     local subType = id or CollectibleType.COLLECTIBLE_NULL
+    local game = Game()
     return game:Spawn(
       EntityType.ENTITY_PICKUP, -- Type
       PickupVariant.PICKUP_COLLECTIBLE, -- Variant
@@ -188,17 +187,6 @@ local function spawnItem(position, optionGroupIndex)
     entity:ToPickup().OptionsPickupIndex = optionGroupIndex
   end
   return entity
-end
-
--- Remove all collectibles from room.
-local function removeItems(whereCallback)
-  whereCallback = whereCallback or true
-  local entities = Isaac.GetRoomEntities()
-  for _, entity in ipairs(entities) do
-    if isCollectible(entity) and whereCallback then
-      entity:Remove();
-    end
-  end
 end
 
 ---Callback triggered after entering a new level.
@@ -295,7 +283,7 @@ function mod:fromJson()
   local jsonData = json.decode(mod:LoadData())
   local result = {
     allowPickAnother = jsonData.allowPickAnother or false,
-    hasSpawnedItems = data.hasSpawnedItems or false,
+    hasSpawnedItems = jsonData.hasSpawnedItems or false,
     initialItems = jsonData.initialItems or {},
   }
   for _, value in ipairs(jsonData.initialItems) do
