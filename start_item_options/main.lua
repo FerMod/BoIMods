@@ -11,11 +11,15 @@ local spawnPositions = {
   Vector(450, 400),
 }
 
-local data = {
-  allowPickAnother = false,
-  hasSpawnedItems = false,
-  initialItems = {},
-}
+local function defaultData()
+  return {
+    allowPickAnother = false,
+    hasSpawnedItems = false,
+    initialItems = {},
+  }
+end
+
+local data = defaultData()
 
 local debug = false
 local function debugPrint(...)
@@ -180,6 +184,7 @@ local function spawnItem(position, optionGroupIndex)
   debugPrint(entity.SubType)
   if (anyPlayerHasItem(entity.SubType)) then
     debugPrint('Has item!', entity.SubType)
+    entity:Remove()
     entity = spawnEntity()
   end
 
@@ -195,12 +200,10 @@ function mod:postNewLevel()
   if (data.hasSpawnedItems) then return end
   if (not isFirstStage()) then return end
 
-  -- Prevent to spawn again items.
-  data.hasSpawnedItems = true;
-
   debugPrint('postNewLevel')
   data = {
     allowPickAnother = isCurseOfLabyrinth(),
+    hasSpawnedItems = true, -- Prevent items from spawning again.
     initialItems = {},
   }
 
@@ -283,7 +286,7 @@ function mod:fromJson()
   local jsonData = json.decode(mod:LoadData())
   local result = {
     allowPickAnother = jsonData.allowPickAnother or false,
-    hasSpawnedItems = jsonData.hasSpawnedItems or false,
+    hasSpawnedItems = jsonData.allowPickAnother or true,
     initialItems = jsonData.initialItems or {},
   }
   for _, value in ipairs(jsonData.initialItems) do
@@ -308,21 +311,28 @@ function mod:toJson()
   mod:SaveData(json.encode(jsonData))
 end
 
+function mod:resetData()
+  data = defaultData()
+end
+
 ---Load stored mod data.
 ---@param isContinued boolean Is continuing from a savestate.
 function mod:loadData(isContinued)
   debugPrint('isContinued: ', tostring(isContinued))
-  if isContinued and mod:HasData() then
-    data = mod:fromJson()
-  end
+  if not mod:HasData() then return end
+  if not isContinued then return end
+  data = mod:fromJson()
 end
 
 ---Save mod data to a file.
 ---@param shouldSave boolean Whether the data should be saved to a file.
 function mod:saveData(shouldSave)
   debugPrint('shouldSave: ', tostring(shouldSave))
-  if shouldSave then return end
-  mod:toJson()
+  if shouldSave then
+    mod:toJson()
+  else
+    mod:resetData()
+  end
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadData)
