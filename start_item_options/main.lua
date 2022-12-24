@@ -301,9 +301,10 @@ function mod:postUpdate()
 end
 
 ---Parse mod data from a json and load it.
-function mod:fromJson()
+---@param jsonString string The json format string.
+function mod:fromJson(jsonString)
   -- Load data from a file and parse it
-  local jsonData = json.decode(mod:LoadData())
+  local jsonData = json.decode(jsonString)
   local result = {
     allowPickAnother = jsonData.allowPickAnother or false,
     hasSpawnedItems = jsonData.hasSpawnedItems or true,
@@ -317,6 +318,7 @@ function mod:fromJson()
 end
 
 ---Parse mod data to a json and save it.
+---@return string
 function mod:toJson()
   local jsonData = {
     allowPickAnother = data.allowPickAnother,
@@ -327,8 +329,8 @@ function mod:toJson()
     table.insert(jsonData.initialItems, key)
   end
 
-  -- Parse data and save it to a file
-  mod:SaveData(json.encode(jsonData))
+  -- Parse data to a json string
+  return json.encode(jsonData)
 end
 
 function mod:resetData()
@@ -340,19 +342,21 @@ end
 function mod:loadData(isContinued)
   debugPrint('isContinued: ', tostring(isContinued))
   if not mod:HasData() then return end
-  if not isContinued then return end
-  data = mod:fromJson()
+  if isContinued then
+    -- Load data from file and parse it from a json string
+    data = mod:fromJson(mod:LoadData())
+  else
+    mod:resetData()
+  end
 end
 
 ---Save mod data to a file.
 ---@param shouldSave boolean Whether the data should be saved to a file.
 function mod:saveData(shouldSave)
   debugPrint('shouldSave: ', tostring(shouldSave))
-  if shouldSave then
-    mod:toJson()
-  else
-    mod:resetData()
-  end
+  if not shouldSave then return end
+  -- Parse data and save it to a file
+  mod:SaveData(mod:toJson())
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadData)
