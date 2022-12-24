@@ -151,9 +151,9 @@ end
 local function anyPlayerHasItem(itemId)
   local game = Game()
   local numPlayers = game:GetNumPlayers()
-  debugPrint('numPlayers', numPlayers)
+  --debugPrint('numPlayers', numPlayers)
   for playerIndex = 0, numPlayers - 1 do
-    debugPrint('player', playerIndex)
+    --debugPrint('player', playerIndex)
 
     if playerHasActive(playerIndex, itemId) == itemId then
       return true
@@ -295,7 +295,7 @@ function mod:postUpdate()
   local numPlayers = game:GetNumPlayers()
   for playerIndex = 0, numPlayers - 1 do
     local player = Isaac.GetPlayer(playerIndex)
-    debugPrint('Player', playerIndex, 'IsItemQueueEmpty', player:IsItemQueueEmpty())
+    --debugPrint('Player', playerIndex, 'IsItemQueueEmpty', player:IsItemQueueEmpty())
     handlePickedUpItem(player)
   end
 end
