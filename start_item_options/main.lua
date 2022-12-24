@@ -48,13 +48,34 @@ local function dump(object, indentLevel, indentStr)
   end
 end
 
+---Whether is a Repentance stage type.
+---@param stageType StageType
+---@return boolean
+local function isRepentanceStage(stageType)
+  if (stageType == StageType.STAGETYPE_REPENTANCE) then
+    return true
+  end
+  if (stageType == StageType.STAGETYPE_REPENTANCE_B) then
+    return true
+  end
+  return false
+end
+
 ---Whether is the first stage of the run and is not `Ascent`.
+---@return boolean
 local function isFirstStage()
   local level = Game():GetLevel()
+  Game():GetLevel():ShowMap()
+  if (level:GetStage() ~= LevelStage.STAGE1_1) then
+    return false
+  end
+  if (isRepentanceStage(level:GetStageType())) then
+    return false
+  end
   if (level:IsAscent()) then
     return false
   end
-  return level:GetStage() == LevelStage.STAGE1_1
+  return true
 end
 
 ---Wheter is the starting room.
