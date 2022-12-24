@@ -65,7 +65,6 @@ end
 ---@return boolean
 local function isFirstStage()
   local level = Game():GetLevel()
-  Game():GetLevel():ShowMap()
   if (level:GetStage() ~= LevelStage.STAGE1_1) then
     return false
   end
@@ -152,9 +151,9 @@ end
 local function anyPlayerHasItem(itemId)
   local game = Game()
   local numPlayers = game:GetNumPlayers()
-  debugPrint('numPlayers', numPlayers)
+  --debugPrint('numPlayers', numPlayers)
   for playerIndex = 0, numPlayers - 1 do
-    debugPrint('player', playerIndex)
+    --debugPrint('player', playerIndex)
 
     if playerHasActive(playerIndex, itemId) == itemId then
       return true
@@ -296,18 +295,19 @@ function mod:postUpdate()
   local numPlayers = game:GetNumPlayers()
   for playerIndex = 0, numPlayers - 1 do
     local player = Isaac.GetPlayer(playerIndex)
-    debugPrint('Player', playerIndex, 'IsItemQueueEmpty', player:IsItemQueueEmpty())
+    --debugPrint('Player', playerIndex, 'IsItemQueueEmpty', player:IsItemQueueEmpty())
     handlePickedUpItem(player)
   end
 end
 
 ---Parse mod data from a json and load it.
-function mod:fromJson()
+---@param jsonString string The json format string.
+function mod:fromJson(jsonString)
   -- Load data from a file and parse it
-  local jsonData = json.decode(mod:LoadData())
+  local jsonData = json.decode(jsonString)
   local result = {
     allowPickAnother = jsonData.allowPickAnother or false,
-    hasSpawnedItems = jsonData.allowPickAnother or true,
+    hasSpawnedItems = jsonData.hasSpawnedItems or true,
     initialItems = jsonData.initialItems or {},
   }
   for _, value in ipairs(jsonData.initialItems) do
@@ -318,6 +318,7 @@ function mod:fromJson()
 end
 
 ---Parse mod data to a json and save it.
+---@return string
 function mod:toJson()
   local jsonData = {
     allowPickAnother = data.allowPickAnother,
@@ -328,12 +329,8 @@ function mod:toJson()
     table.insert(jsonData.initialItems, key)
   end
 
-  -- Parse data and save it to a file
-  mod:SaveData(json.encode(jsonData))
-end
-
-function mod:resetData()
-  data = defaultData()
+  -- Parse data to a json string
+  return json.encode(jsonData)
 end
 
 ---Load stored mod data.
@@ -341,22 +338,24 @@ end
 function mod:loadData(isContinued)
   debugPrint('isContinued: ', tostring(isContinued))
   if not mod:HasData() then return end
-  if not isContinued then return end
-  data = mod:fromJson()
+  if isContinued then
+    -- Load data from file and parse it from a json string
+    data = mod:fromJson(mod:LoadData())
+  else
+    data = defaultData()
+  end
 end
 
 ---Save mod data to a file.
 ---@param shouldSave boolean Whether the data should be saved to a file.
 function mod:saveData(shouldSave)
   debugPrint('shouldSave: ', tostring(shouldSave))
-  if shouldSave then
-    mod:toJson()
-  else
-    mod:resetData()
-  end
+  if not shouldSave then return end
+  -- Parse data and save it to a file
+  mod:SaveData(mod:toJson())
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadData)
-mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, mod.saveData)
-mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.postNewLevel)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
+mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.postNewLevel)
+mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, mod.saveData)
