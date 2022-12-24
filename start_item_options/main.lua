@@ -333,10 +333,6 @@ function mod:toJson()
   return json.encode(jsonData)
 end
 
-function mod:resetData()
-  data = defaultData()
-end
-
 ---Load stored mod data.
 ---@param isContinued boolean Is continuing from a savestate.
 function mod:loadData(isContinued)
@@ -346,7 +342,7 @@ function mod:loadData(isContinued)
     -- Load data from file and parse it from a json string
     data = mod:fromJson(mod:LoadData())
   else
-    mod:resetData()
+    data = defaultData()
   end
 end
 
