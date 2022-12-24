@@ -65,7 +65,6 @@ end
 ---@return boolean
 local function isFirstStage()
   local level = Game():GetLevel()
-  Game():GetLevel():ShowMap()
   if (level:GetStage() ~= LevelStage.STAGE1_1) then
     return false
   end
