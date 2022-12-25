@@ -276,7 +276,7 @@ local function handlePickedUpItem(player)
 
   local item = player.QueuedItem.Item
   local itemConfigHash = entityHashCode(item.ID)
-  debugPrint('postUpdate initialItem[' .. itemConfigHash .. ']', data.initialItems[itemConfigHash])
+  --debugPrint('postUpdate initialItem[' .. itemConfigHash .. ']', data.initialItems[itemConfigHash])
   if (not data.initialItems[itemConfigHash]) then return end
 
   Game():AddTreasureRoomsVisited()
@@ -355,9 +355,12 @@ end
 ---@param shouldSave boolean Whether the data should be saved to a file.
 function mod:saveData(shouldSave)
   debugPrint('shouldSave: ', tostring(shouldSave))
-  if not shouldSave then return end
-  -- Parse data and save it to a file
-  mod:SaveData(mod:toJson())
+  if shouldSave then
+    -- Parse data and save it to a file
+    mod:SaveData(mod:toJson())
+  else
+    data = defaultData()
+  end
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadData)
