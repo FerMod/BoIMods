@@ -5,10 +5,10 @@ local json = require("json")
 local mod = RegisterMod("Start Item Options", 1)
 
 local spawnPositions = {
-  Vector(250, 300),
-  Vector(200, 400),
-  Vector(400, 300),
-  Vector(450, 400),
+  Vector(200, 400), -- Left
+  Vector(250, 300), -- Top Left
+  Vector(400, 300), -- Top Right
+  Vector(450, 400), -- Right
 }
 
 local function defaultData()
