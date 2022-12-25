@@ -85,6 +85,7 @@ local function isStartingRoom()
 end
 
 ---Whether is not in Greed mode or a challenge run.
+---@return boolean
 local function isNormalRun()
   local game = Game()
   if (game:IsGreedMode()) then
@@ -98,8 +99,10 @@ local function isNormalRun()
 end
 
 ---Whether the current room is a treasure room.
+---@return boolean
 local function isTreasureRoom()
-  return Game():GetLevel():GetCurrentRoom():GetType() == RoomType.ROOM_TREASURE
+  local level = Game():GetLevel()
+  return level:GetCurrentRoom():GetType() == RoomType.ROOM_TREASURE
 end
 
 ---Whether the given `entity` is a collectible.
