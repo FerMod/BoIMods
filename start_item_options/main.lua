@@ -363,7 +363,7 @@ function mod:saveData(shouldSave)
   end
 end
 
-mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadData)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.postNewLevel)
+mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadData)
 mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, mod.saveData)
