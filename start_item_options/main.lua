@@ -271,7 +271,7 @@ end
 ---Check if the player has picked up any item and handle it if its one of the starting items.
 ---Does nothing if the player has not picked up any.
 ---@param player EntityPlayer The player entity.
-function mod:handlePickedUpItem(player)
+local function handlePickedUpItem(player)
   if (player:IsItemQueueEmpty()) then return end
 
   local item = player.QueuedItem.Item
@@ -301,7 +301,7 @@ function mod:postUpdate()
   for playerIndex = 0, numPlayers - 1 do
     local player = Isaac.GetPlayer(playerIndex)
     --debugPrint('Player', playerIndex, 'IsItemQueueEmpty', player:IsItemQueueEmpty())
-    mod:handlePickedUpItem(player)
+    handlePickedUpItem(player)
   end
 end
 
