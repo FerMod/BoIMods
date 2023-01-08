@@ -339,7 +339,7 @@ end
 
 ---Load stored mod data.
 ---@param isContinued boolean Is continuing from a savestate.
-function mod:loadData(isContinued)
+function mod:loadModData(isContinued)
   debugPrint('isContinued: ', tostring(isContinued))
   if not mod:HasData() then return end
   if isContinued then
@@ -352,7 +352,7 @@ end
 
 ---Save mod data to a file.
 ---@param shouldSave boolean Whether the data should be saved to a file.
-function mod:saveData(shouldSave)
+function mod:saveModData(shouldSave)
   debugPrint('shouldSave: ', tostring(shouldSave))
   if shouldSave then
     -- Parse data and save it to a file
@@ -364,5 +364,5 @@ end
 
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.postNewLevel)
-mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadData)
-mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, mod.saveData)
+mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadModData)
+mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, mod.saveModData)
