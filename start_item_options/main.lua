@@ -5,10 +5,10 @@ local json = require("json")
 local mod = RegisterMod("Start Item Options", 1)
 
 local spawnPositions = {
-  Vector(250, 300),
-  Vector(200, 400),
-  Vector(400, 300),
-  Vector(450, 400),
+  Vector(200, 400), -- Left
+  Vector(250, 300), -- Top Left
+  Vector(400, 300), -- Top Right
+  Vector(450, 400), -- Right
 }
 
 local function defaultData()
@@ -20,6 +20,7 @@ local function defaultData()
 end
 
 local data = defaultData()
+local hasInitialized = false
 
 local debug = false
 local function debugPrint(...)
@@ -85,6 +86,7 @@ local function isStartingRoom()
 end
 
 ---Whether is not in Greed mode or a challenge run.
+---@return boolean
 local function isNormalRun()
   local game = Game()
   if (game:IsGreedMode()) then
@@ -98,8 +100,10 @@ local function isNormalRun()
 end
 
 ---Whether the current room is a treasure room.
+---@return boolean
 local function isTreasureRoom()
-  return Game():GetLevel():GetCurrentRoom():GetType() == RoomType.ROOM_TREASURE
+  local level = Game():GetLevel()
+  return level:GetCurrentRoom():GetType() == RoomType.ROOM_TREASURE
 end
 
 ---Whether the given `entity` is a collectible.
@@ -189,7 +193,7 @@ local function spawnItem(position, optionGroupIndex)
   local spawnEntity = function(id)
     local subType = id or CollectibleType.COLLECTIBLE_NULL
     local game = Game()
-    return game:Spawn(
+    local item = game:Spawn(
       EntityType.ENTITY_PICKUP, -- Type
       PickupVariant.PICKUP_COLLECTIBLE, -- Variant
       position, -- Position
@@ -198,10 +202,11 @@ local function spawnItem(position, optionGroupIndex)
       subType, -- SubType
       game:GetRoom():GetSpawnSeed()-- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
     )
+    game:GetItemPool():AddRoomBlacklist(item.SubType)
+    return item
   end
 
   local entity = spawnEntity()
-  debugPrint(entity.SubType)
   if (anyPlayerHasItem(entity.SubType)) then
     debugPrint('Has item!', entity.SubType)
     entity:Remove()
@@ -221,11 +226,9 @@ function mod:postNewLevel()
   if (not isFirstStage()) then return end
 
   debugPrint('postNewLevel')
-  data = {
-    allowPickAnother = isCurseOfLabyrinth(),
-    hasSpawnedItems = true, -- Prevent items from spawning again.
-    initialItems = {},
-  }
+  data.allowPickAnother = isCurseOfLabyrinth()
+  data.hasSpawnedItems = true -- Prevent items from spawning again.
+  data.initialItems = {}
 
   for _, position in ipairs(spawnPositions) do
     local entity = spawnItem(position)
@@ -271,7 +274,7 @@ local function handlePickedUpItem(player)
 
   local item = player.QueuedItem.Item
   local itemConfigHash = entityHashCode(item.ID)
-  debugPrint('postUpdate initialItem[' .. itemConfigHash .. ']', data.initialItems[itemConfigHash])
+  --debugPrint('postUpdate initialItem[' .. itemConfigHash .. ']', data.initialItems[itemConfigHash])
   if (not data.initialItems[itemConfigHash]) then return end
 
   Game():AddTreasureRoomsVisited()
@@ -333,29 +336,38 @@ function mod:toJson()
   return json.encode(jsonData)
 end
 
+---Called after a Player Entity is initialized.
+function mod:postPlayerInit()
+  debugPrint('postPlayerInit hasInitialized:', tostring(hasInitialized))
+  if hasInitialized then return end
+  hasInitialized = true
+  data = defaultData()
+end
+
 ---Load stored mod data.
 ---@param isContinued boolean Is continuing from a savestate.
-function mod:loadData(isContinued)
+function mod:loadModData(isContinued)
   debugPrint('isContinued: ', tostring(isContinued))
   if not mod:HasData() then return end
-  if isContinued then
-    -- Load data from file and parse it from a json string
-    data = mod:fromJson(mod:LoadData())
-  else
-    data = defaultData()
-  end
+  if not isContinued then return end
+
+  -- Load data from file and parse it from a json string
+  data = mod:fromJson(mod:LoadData())
 end
 
 ---Save mod data to a file.
 ---@param shouldSave boolean Whether the data should be saved to a file.
-function mod:saveData(shouldSave)
+function mod:saveModData(shouldSave)
   debugPrint('shouldSave: ', tostring(shouldSave))
+  hasInitialized = shouldSave
   if not shouldSave then return end
+
   -- Parse data and save it to a file
   mod:SaveData(mod:toJson())
 end
 
-mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadData)
+mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.postPlayerInit)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.postNewLevel)
-mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, mod.saveData)
+mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadModData)
+mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, mod.saveModData)
