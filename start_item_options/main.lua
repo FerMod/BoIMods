@@ -20,6 +20,7 @@ local function defaultData()
 end
 
 local data = defaultData()
+local hasInitialized = false
 
 local debug = false
 local function debugPrint(...)
@@ -335,31 +336,37 @@ function mod:toJson()
   return json.encode(jsonData)
 end
 
+---Called after a Player Entity is initialized.
+function mod:postPlayerInit()
+  debugPrint('postPlayerInit hasInitialized:', tostring(hasInitialized))
+  if hasInitialized then return end
+  hasInitialized = true
+  data = defaultData()
+end
+
 ---Load stored mod data.
 ---@param isContinued boolean Is continuing from a savestate.
 function mod:loadModData(isContinued)
   debugPrint('isContinued: ', tostring(isContinued))
   if not mod:HasData() then return end
-  if isContinued then
-    -- Load data from file and parse it from a json string
-    data = mod:fromJson(mod:LoadData())
-  else
-    data = defaultData()
-  end
+  if not isContinued then return end
+
+  -- Load data from file and parse it from a json string
+  data = mod:fromJson(mod:LoadData())
 end
 
 ---Save mod data to a file.
 ---@param shouldSave boolean Whether the data should be saved to a file.
 function mod:saveModData(shouldSave)
   debugPrint('shouldSave: ', tostring(shouldSave))
-  if shouldSave then
-    -- Parse data and save it to a file
-    mod:SaveData(mod:toJson())
-  else
-    data = defaultData()
-  end
+  hasInitialized = shouldSave
+  if not shouldSave then return end
+
+  -- Parse data and save it to a file
+  mod:SaveData(mod:toJson())
 end
 
+mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.postPlayerInit)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.postNewLevel)
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadModData)
