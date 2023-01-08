@@ -206,7 +206,6 @@ local function spawnItem(position, optionGroupIndex)
   end
 
   local entity = spawnEntity()
-  debugPrint(entity.SubType)
   if (anyPlayerHasItem(entity.SubType)) then
     debugPrint('Has item!', entity.SubType)
     entity:Remove()
