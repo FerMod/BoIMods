@@ -225,11 +225,9 @@ function mod:postNewLevel()
   if (not isFirstStage()) then return end
 
   debugPrint('postNewLevel')
-  data = {
-    allowPickAnother = isCurseOfLabyrinth(),
-    hasSpawnedItems = true, -- Prevent items from spawning again.
-    initialItems = {},
-  }
+  data.allowPickAnother = isCurseOfLabyrinth()
+  data.hasSpawnedItems = true -- Prevent items from spawning again.
+  data.initialItems = {}
 
   for _, position in ipairs(spawnPositions) do
     local entity = spawnItem(position)
