@@ -359,7 +359,7 @@ end
 ---@param shouldSave boolean Whether the data should be saved to a file.
 function mod:saveModData(shouldSave)
   debugPrint('shouldSave: ', tostring(shouldSave))
-  hasInitialized = shouldSave
+  hasInitialized = false
   if not shouldSave then return end
 
   -- Parse data and save it to a file
