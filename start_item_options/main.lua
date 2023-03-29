@@ -194,13 +194,13 @@ local function spawnItem(position, optionGroupIndex)
     local subType = id or CollectibleType.COLLECTIBLE_NULL
     local game = Game()
     local item = game:Spawn(
-      EntityType.ENTITY_PICKUP, -- Type
+      EntityType.ENTITY_PICKUP,         -- Type
       PickupVariant.PICKUP_COLLECTIBLE, -- Variant
-      position, -- Position
-      Vector.Zero, -- Velocity
-      nil, -- Parent
-      subType, -- SubType
-      game:GetRoom():GetSpawnSeed()-- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+      position,                         -- Position
+      Vector.Zero,                      -- Velocity
+      nil,                              -- Parent
+      subType,                          -- SubType
+      game:GetRoom():GetSpawnSeed()     -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
     )
     game:GetItemPool():AddRoomBlacklist(item.SubType)
     return item
