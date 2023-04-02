@@ -222,8 +222,8 @@ end
 ---Callback triggered after entering a new level.
 function mod:postNewLevel()
   if (not isNormalRun()) then return end
-  if (data.hasSpawnedItems) then return end
   if (not isFirstStage()) then return end
+  if (data.hasSpawnedItems) then return end
 
   debugPrint('postNewLevel')
   data.allowPickAnother = isCurseOfLabyrinth()
@@ -239,6 +239,7 @@ function mod:postNewLevel()
 
   debugPrint(dump(data))
   mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.postUpdate)
+  mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 end
 
 ---Callback function to remove collectibles from a treasure room.
@@ -264,6 +265,8 @@ function mod:removeTreasure()
       entity:Remove()
     end
   end
+
+  mod:RemoveCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 end
 
 ---Check if the player has picked up any item and handle it if its one of the starting items.
