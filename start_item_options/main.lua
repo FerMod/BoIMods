@@ -260,7 +260,6 @@ function mod:removeTreasure()
     return
   end
 
-
   local entities = Isaac.GetRoomEntities()
   for _, entity in ipairs(entities) do
     if isCollectible(entity) then
