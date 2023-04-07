@@ -222,7 +222,10 @@ end
 ---Callback triggered after entering a new level.
 function mod:postNewLevel()
   if (not isNormalRun()) then return end
-  if (not isFirstStage()) then return end
+  if (not isFirstStage()) then
+    mod:RemoveCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
+    return
+  end
   if (data.hasSpawnedItems) then return end
 
   debugPrint('postNewLevel')
@@ -265,8 +268,6 @@ function mod:removeTreasure()
       entity:Remove()
     end
   end
-
-  mod:RemoveCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 end
 
 ---Check if the player has picked up any item and handle it if its one of the starting items.
@@ -370,7 +371,6 @@ function mod:saveModData(shouldSave)
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.postPlayerInit)
-mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.postNewLevel)
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadModData)
 mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, mod.saveModData)
