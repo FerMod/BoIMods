@@ -121,6 +121,12 @@ local function isCurseOfLabyrinth()
   return (curse & LevelCurse.CURSE_OF_LABYRINTH) == LevelCurse.CURSE_OF_LABYRINTH
 end
 
+---Whether is the first visit to the current room.
+---@return boolean
+local function isRoomFirstVisit()
+  return Game():GetRoom():IsFirstVisit()
+end
+
 ---Check player has active item in any of the 4 slots.
 ---@param playerIndex integer
 ---@param itemId integer
@@ -252,8 +258,8 @@ function mod:removeTreasure()
   if (not isFirstStage()) then return end
   if (not isTreasureRoom()) then return end
 
-  debugPrint('IsFirstVisit', Game():GetRoom():IsFirstVisit())
-  if (not Game():GetRoom():IsFirstVisit()) then return end
+  debugPrint('IsFirstVisit', isRoomFirstVisit())
+  if (not isRoomFirstVisit()) then return end
   debugPrint('removeTreasure allowPickAnother', data.allowPickAnother)
   if (data.allowPickAnother) then
     -- Dont let pick other treasure room collectible (if present)
