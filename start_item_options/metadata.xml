@@ -3,8 +3,10 @@
     <name>Start Item Options</name>
     <directory>start_item_options</directory>
     <id>2817244186</id>
-    <description>This mod adds four initial items options to choose from in the starting room. Because of this, the treasure room of the first level is always empty. Although, when the level has the 'Curse Of Labyrinth', the second entered treasure room will be always be the empty one.</description>
-    <version>1.3.9</version>
+    <description>This mod adds four initial items options to choose from in the starting room. Because of this, the treasure room of the first level is always empty. Although, when the level has the 'Curse Of Labyrinth', the second entered treasure room will be always be the empty one.
+
+[quote]You can find the source code [url=https://github.com/FerMod/BoIMods/blob/main/start_item_options]here[/url][/quote]</description>
+    <version>1.3.10</version>
     <visibility>Friends Only</visibility>
     <tag id="Lua"/>
     <tag id="Items"/>

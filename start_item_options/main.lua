@@ -15,6 +15,7 @@ local function defaultData()
   return {
     allowPickAnother = false,
     hasSpawnedItems = false,
+    shouldRemoveItem = false,
     initialItems = {},
   }
 end
@@ -120,6 +121,12 @@ local function isCurseOfLabyrinth()
   return (curse & LevelCurse.CURSE_OF_LABYRINTH) == LevelCurse.CURSE_OF_LABYRINTH
 end
 
+---Whether is the first visit to the current room.
+---@return boolean
+local function isRoomFirstVisit()
+  return Game():GetRoom():IsFirstVisit()
+end
+
 ---Check player has active item in any of the 4 slots.
 ---@param playerIndex integer
 ---@param itemId integer
@@ -222,15 +229,16 @@ end
 ---Callback triggered after entering a new level.
 function mod:postNewLevel()
   if (not isNormalRun()) then return end
-  if (not isFirstStage()) then
-    mod:RemoveCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
+  if (not isFirstStage()) then return end
+  if (data.hasSpawnedItems) then
+    data.shouldRemoveItem = false
     return
   end
-  if (data.hasSpawnedItems) then return end
 
   debugPrint('postNewLevel')
   data.allowPickAnother = isCurseOfLabyrinth()
   data.hasSpawnedItems = true -- Prevent items from spawning again.
+  data.shouldRemoveItem = true
   data.initialItems = {}
 
   for _, position in ipairs(spawnPositions) do
@@ -242,7 +250,6 @@ function mod:postNewLevel()
 
   debugPrint(dump(data))
   mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.postUpdate)
-  mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 end
 
 ---Callback function to remove collectibles from a treasure room.
@@ -251,21 +258,23 @@ function mod:removeTreasure()
   if (not isFirstStage()) then return end
   if (not isTreasureRoom()) then return end
 
-  debugPrint('IsFirstVisit', Game():GetRoom():IsFirstVisit())
-  if (not Game():GetRoom():IsFirstVisit()) then return end
+  debugPrint('IsFirstVisit', isRoomFirstVisit())
+  if (not isRoomFirstVisit()) then return end
   debugPrint('removeTreasure allowPickAnother', data.allowPickAnother)
   if (data.allowPickAnother) then
     -- Dont let pick other treasure room collectible (if present)
     data.allowPickAnother = false
     return
   end
-
+  debugPrint('removeTreasure shouldRemoveItem', data.shouldRemoveItem)
+  if not data.shouldRemoveItem then return end
 
   local entities = Isaac.GetRoomEntities()
   for _, entity in ipairs(entities) do
     if isCollectible(entity) then
       debugPrint('Removing', entity.SubType, 'from treasure room...')
       entity:Remove()
+      data.shouldRemoveItem = false;
     end
   end
 end
@@ -315,6 +324,7 @@ function mod:fromJson(jsonString)
   local result = {
     allowPickAnother = jsonData.allowPickAnother or false,
     hasSpawnedItems = jsonData.hasSpawnedItems or true,
+    shouldRemoveItem = jsonData.shouldRemoveItem or true,
     initialItems = jsonData.initialItems or {},
   }
   for _, value in ipairs(jsonData.initialItems) do
@@ -330,6 +340,7 @@ function mod:toJson()
   local jsonData = {
     allowPickAnother = data.allowPickAnother,
     hasSpawnedItems = data.hasSpawnedItems,
+    shouldRemoveItem = data.shouldRemoveItem,
     initialItems = {},
   }
   for key, _ in pairs(data.initialItems) do
@@ -371,6 +382,7 @@ function mod:saveModData(shouldSave)
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.postPlayerInit)
+mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.removeTreasure)
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.postNewLevel)
 mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.loadModData)
 mod:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, mod.saveModData)
