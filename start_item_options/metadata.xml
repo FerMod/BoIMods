@@ -16,7 +16,7 @@ These are some of the improvements:
 
 [quote]You can find the source code [url=https://github.com/FerMod/BoIMods/blob/main/start_item_options]here[/url][/quote]</description>
     <version>1.3.10</version>
-    <visibility>Friends Only</visibility>
+    <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Items"/>
     <tag id="Tweaks"/>
