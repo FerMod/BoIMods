@@ -6,7 +6,7 @@ Originally based on [There's A Bit More Options at the Start!](https://steamcomm
 
 These are some of the improvements:
 
-* Planetarium chance properly update when picking or skipping the item.
+* Planetarium chance properly updates when picking up or skipping the item.
 * In XL floors, the first item room has the item, but the second entered one does not.
 * Fixes items being removed from item rooms.
 
