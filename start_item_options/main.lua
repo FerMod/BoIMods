@@ -4,6 +4,7 @@
 local json = require("json")
 local mod = RegisterMod("Start Item Options", 1)
 
+-- The items spawn positions. For each positions an items is spawned.
 local spawnPositions = {
   Vector(200, 400), -- Left
   Vector(250, 300), -- Top Left
@@ -23,6 +24,7 @@ end
 local data = defaultData()
 local hasInitialized = false
 
+-- Enables debug features like printing with `debugPrint`.
 local debug = false
 local function debugPrint(...)
   if (not debug) then return end
