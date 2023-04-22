@@ -7,6 +7,7 @@ Originally based on [There's A Bit More Options at the Start!](https://steamcomm
 These are some of the improvements:
 
 * Planetarium chance properly updates when picking up or skipping the item.
+  _**Note:** The planetarium chance still behaves as the vanilla game, so remember not to enter the treasure room if you decide to skip the item._
 * In XL floors, the first item room has the item, but the second entered one does not.
 * Fixes items being removed from item rooms.
 
