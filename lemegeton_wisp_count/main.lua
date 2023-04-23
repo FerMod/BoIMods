@@ -11,7 +11,7 @@ mod.position = Vector(10, 24)
 mod.wispCount = {}
 
 -- Enables debug features like printing with `debugPrint`.
-local debug = true
+local debug = false
 local function debugPrint(...)
   if (not debug) then return end
   print(...)
