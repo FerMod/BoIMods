@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <name>Lemegeton Wisp Count</name>
+    <directory>lemegeton_wisp_count</directory>
+    <id></id>
+    <description></description>
+    <version>0.1.0</version>
+    <visibility>Friends</visibility>
+    <tag id="Lua"/>
+    <tag id="Items"/>
+</metadata>
