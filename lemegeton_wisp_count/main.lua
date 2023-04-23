@@ -39,24 +39,20 @@ local function dump(object, indentLevel, indentStr)
 end
 
 function mod:setUpDebug()
-  debugPrint('SetUpDebug')
-
-
   local player = Isaac.GetPlayer()
-  player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 100)
+  player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
   player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
-  --player:AddCollectible(CollectibleType.COLLECTIBLE_CAMO_UNDIES)
 
 
-  -- game:Spawn(
-  --   EntityType.ENTITY_HOST,           -- Type
-  --   0,                                -- Variant
-  --   player.Position + Vector(0, -20), -- Position
-  --   Vector.Zero,                      -- Velocity
-  --   nil,                              -- Parent
-  --   0,                                -- SubType
-  --   Game():GetRoom():GetSpawnSeed()   -- Seed
-  -- )
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,              -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
+    game:GetRoom():GetCenterPos(),         -- Position
+    Vector.Zero,                           -- Velocity
+    nil,                                   -- Parent
+    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
+    game:GetRoom():GetSpawnSeed()          -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
 
   Isaac.ExecuteCommand('keybinds 1')
   Isaac.ExecuteCommand('consolefade 1')
@@ -109,7 +105,7 @@ local function HudOffset()
 end
 
 function mod:useItem(collectibleType, rng, player, useFlag, activeSlot, varData)
-  if (not debug) then return end
+  if not debug then return end
   return {
     Discharge = false,
     Remove = false,
@@ -124,29 +120,16 @@ function mod:onPostRender()
   if not HasLemegeton(player) then return end
 
   local renderPosition = mod.position + HudOffset()
-
   local wispCount = LemegetonWispCount(player)
   local maxWispCount = math.max(wispCount, MAX_LEMEGETON_WISP)
   local valueOutput = string.format("%1u/%u", wispCount, maxWispCount)
-  mod.font:DrawString(valueOutput, renderPosition.X, renderPosition.Y, KColor(1, 1, 1, 1), 0, true)
-
-  -- local iconPosition = mod.position + Vector(0, 22)
-  -- mod.hudSprite:Render(iconPosition)
-  -- mod.font:DrawString(valueOutput, mod.position.X + 8, mod.position.Y + 1, KColor(1, 1, 1, 0.5), 0, true)
+  mod.font:DrawString(valueOutput, renderPosition.X, renderPosition.Y, KColor(1, 1, 1, 1), 22, true)
 end
 
 ---Called after a Player Entity is initialized.
 ---@param player EntityPlayer
 function mod:postPlayerInit(player)
-  local itemConfig = Isaac.GetItemConfig():GetCollectible(CollectibleType.COLLECTIBLE_LEMEGETON)
-  mod.hudSprite = Sprite()
-  mod.hudSprite:Load("gfx/005.100_Collectible.anm2", true)
-  mod.hudSprite:ReplaceSpritesheet(1, itemConfig.GfxFileName)
-  mod.hudSprite:LoadGraphics()
-  mod.hudSprite:SetFrame("Idle", 8)
-  mod.hudSprite.Color = Color(1, 1, 1, 0.45)
-  mod.hudSprite.Scale = Vector(0.5, 0.5)
-
+  if mod.font then return end
   mod.font = Font()
   mod.font:Load("font/luaminioutlined.fnt")
 end
