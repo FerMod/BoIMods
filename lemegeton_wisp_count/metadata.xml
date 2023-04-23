@@ -2,10 +2,11 @@
 <metadata>
     <name>Lemegeton Wisp Count</name>
     <directory>lemegeton_wisp_count</directory>
-    <id></id>
-    <description></description>
-    <version>0.1.0</version>
-    <visibility>Friends</visibility>
+    <id>2966407131</id>
+    <description>This mod adds a counter for the wisps spawned by the Lemegeton item.</description>
+    <version>0.1.1</version>
+    <visibility>Friends Only</visibility>
     <tag id="Lua"/>
-    <tag id="Items"/>
+    <tag id="Active Items"/>
+    <tag id="Graphics"/>
 </metadata>
