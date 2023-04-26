@@ -4,14 +4,18 @@
 local mod = RegisterMod("Lemegeton Wisp Count", 1)
 local game = Game()
 
-local offsetMultiplier = Vector(20, 12)
-local MAX_LEMEGETON_WISP = 26;
+-- do return end
 
+local offsetMultiplier = Vector(20, 12)
+
+mod.positionBookOfVirtues = Vector(34, -6)
 mod.position = Vector(10, 24)
+-- mod.position = Vector(34, -6)
 mod.wispCount = {}
+mod.maxWisps = 26
 
 -- Enables debug features like printing with `debugPrint`.
-local debug = false
+local debug = true
 local function debugPrint(...)
   if (not debug) then return end
   print(...)
@@ -38,106 +42,224 @@ local function dump(object, indentLevel, indentStr)
   end
 end
 
-function mod:setUpDebug()
-  local player = Isaac.GetPlayer()
-  player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
-  player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
+function mod:SetUpDebug()
+  local numPlayers = game:GetNumPlayers()
+  for playerIndex = 0, numPlayers - 1 do
+    local player = game:GetPlayer(playerIndex)
+    player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
+    -- player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
+    -- player:AddCollectible(CollectibleType.COLLECTIBLE_HOURGLASS, 12, true, ActiveSlot.SLOT_SECONDARY)
+    player:AddCollectible(CollectibleType.COLLECTIBLE_SCHOOLBAG)
+    player:AddTrinket(TrinketType.TRINKET_DICE_BAG)
+    -- player:AddPill(PillColor.PILL_BLUE_BLUE)
+  end
 
-
+  local room = game:GetRoom()
+  local roomCenterPos = room:GetCenterPos()
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,                    -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,            -- Variant
+    roomCenterPos - Vector(40, 0),               -- Position
+    Vector.Zero,                                 -- Velocity
+    nil,                                         -- Parent
+    CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES, -- SubType
+    room:GetSpawnSeed()                          -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,                  -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,          -- Variant
+    roomCenterPos - Vector(80, 0),             -- Position
+    Vector.Zero,                               -- Velocity
+    nil,                                       -- Parent
+    CollectibleType.COLLECTIBLE_DECK_OF_CARDS, -- SubType
+    room:GetSpawnSeed()                        -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
   game:Spawn(
     EntityType.ENTITY_PICKUP,              -- Type
     PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
-    game:GetRoom():GetCenterPos(),         -- Position
+    roomCenterPos + Vector(30, 0),         -- Position
     Vector.Zero,                           -- Velocity
     nil,                                   -- Parent
     CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
-    game:GetRoom():GetSpawnSeed()          -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
   )
+
 
   Isaac.ExecuteCommand('keybinds 1')
   Isaac.ExecuteCommand('consolefade 1')
   Isaac.ExecuteCommand('pauseonfocuslost 0')
   Isaac.ExecuteCommand('mouse 0')
+  Isaac.ExecuteCommand('debug 3')
+  Isaac.ExecuteCommand('debug 8')
+end
+
+---Whether `object1` is the same as `object2`.
+---Compares their pointer hash to perform the equality check.
+---@param object1 any
+---@param object2 any
+---@return boolean
+local function isSameEntity(object1, object2)
+  return GetPtrHash(object1) == GetPtrHash(object2)
 end
 
 ---Whether the given `entity` is a familiar.
 ---@param entity Entity
 ---@return boolean
-local function IsFamiliar(entity)
+local function isFamiliar(entity)
+  if not entity then
+    return false
+  end
   return entity.Type == EntityType.ENTITY_FAMILIAR
 end
 
----Whether the given `familiar` is a Lemegeton wisp.
+---Whether the given `entity` is a wisp of *Lemegeton*.
 ---@param entity Entity
 ---@return boolean
-local function IsLemegetonWisp(entity)
-  if (not IsFamiliar(entity)) then
+local function isLemegetonWisp(entity)
+  if not isFamiliar(entity) then
     return false
   end
   return entity.Variant == FamiliarVariant.ITEM_WISP;
 end
 
+---Whether the player has the *Lemegeton* active item.
+---@param player EntityPlayer
+---@return boolean
+local function hasLemegeton(player)
+  return player:HasCollectible(CollectibleType.COLLECTIBLE_LEMEGETON)
+end
+
+---Whether the player has the *Book Of Virtues* active item.
+---@param player EntityPlayer
+---@return boolean
+local function hasBookOfVirtues(player)
+  return player:HasCollectible(CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES)
+end
+
+---Whether the player owns the familiar.
+---@param player EntityPlayer
+---@param familiar EntityFamiliar
+---@return boolean
+local function playerOwnsFamiliar(player, familiar)
+  return isSameEntity(player, familiar.Player)
+end
+
 ---Return the number of Lemegeton wisps.
 ---@param player EntityPlayer
 ---@return integer
-local function LemegetonWispCount(player)
+local function lemegetonWispCount(player)
   local wispCount = 0
   local entities = Isaac.GetRoomEntities()
   for _, entity in ipairs(entities) do
-    if IsLemegetonWisp(entity) then
+    if isLemegetonWisp(entity) and playerOwnsFamiliar(player, entity:ToFamiliar()) then
       wispCount = wispCount + 1;
     end
   end
   return wispCount
 end
 
----Whether the player has the Lemegeton item.
----@param player EntityPlayer
----@return boolean
-local function HasLemegeton(player)
-  return player:HasCollectible(CollectibleType.COLLECTIBLE_LEMEGETON)
-end
-
 ---Returns the current hud offset.
 ---@return Vector
-local function HudOffset()
+local function hudOffset()
   return offsetMultiplier * Options.HUDOffset + game.ScreenShakeOffset
 end
 
-function mod:useItem(collectibleType, rng, player, useFlag, activeSlot, varData)
-  if not debug then return end
-  return {
-    Discharge = false,
-    Remove = false,
-    ShowAnim = false,
-  }
+---Draws to the screen the text with the number of wisps and the maximum number of wisp.
+---@param font Font
+---@param wispCount integer
+---@param maxWispCount integer
+---@param position Vector
+function DrawWispCountText(font, wispCount, maxWispCount, position)
+  local maxWispAmount = math.max(wispCount, maxWispCount)
+  local valueOutput = string.format("%1u/%u", wispCount, maxWispAmount)
+  local renderPosition = position + hudOffset()
+
+  font:DrawStringScaledUTF8(
+    valueOutput,        -- string String
+    renderPosition.X,   -- float PositionX,
+    renderPosition.Y,   -- float PositionY,
+    1,                  -- float ScaleX,
+    1,                  -- float ScaleY,
+    KColor(1, 1, 1, 1), -- KColor RenderColor,
+    22,                 -- int BoxWidth = 0,
+    true                -- boolean Center = false
+  )
 end
 
-function mod:onPostRender()
+---Updates and returns the number of whisp that the player has.
+---@param player EntityPlayer
+---@return integer
+function mod:UpdateWispCount(player)
+  local wispCount = lemegetonWispCount(player)
+  mod.wispCount[GetPtrHash(player)] = wispCount
+  return wispCount
+end
+
+---Updates and returns the draw position of whisp count.
+---@param player EntityPlayer
+---@return Vector
+function mod:UpdateCounterPosition(player)
+  local position = mod.position
+  if hasBookOfVirtues(player) then
+    position = mod.positionBookOfVirtues
+  end
+  return position
+end
+
+function mod:OnPostRender()
+  if not game:GetHUD():IsVisible() then return end
   if not mod.font then return end
+  if not mod.font:IsLoaded() then return end
 
-  local player = Isaac.GetPlayer()
-  if not HasLemegeton(player) then return end
+  local numPlayers = game:GetNumPlayers()
+  for playerIndex = 0, numPlayers - 1 do
+    local player = game:GetPlayer(playerIndex)
+    if hasLemegeton(player) then
+      local wispCount = mod:UpdateWispCount(player)
+      local position = mod:UpdateCounterPosition(player)
+      mod:DrawWispCountText(mod.font, wispCount, mod.maxWisps, position)
+    end
+  end
 
-  local renderPosition = mod.position + HudOffset()
-  local wispCount = LemegetonWispCount(player)
-  local maxWispCount = math.max(wispCount, MAX_LEMEGETON_WISP)
-  local valueOutput = string.format("%1u/%u", wispCount, maxWispCount)
-  mod.font:DrawString(valueOutput, renderPosition.X, renderPosition.Y, KColor(1, 1, 1, 1), 22, true)
+  -- debugPrint(player:GetActiveItem(ActiveSlot.SLOT_PRIMARY))
+
+  debugPrint(dump(mod))
 end
 
 ---Called after a Player Entity is initialized.
 ---@param player EntityPlayer
-function mod:postPlayerInit(player)
+function mod:PostPlayerInit(player)
   if mod.font then return end
   mod.font = Font()
   mod.font:Load("font/luaminioutlined.fnt")
 end
 
-mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.onPostRender)
-mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.postPlayerInit)
+---comment
+---@param collectibleType CollectibleType
+---@param rng RNG
+---@param entityPlayer EntityPlayer
+---@param useFlag UseFlag
+---@param activeSlot ActiveSlot
+---@param varData integer
+function mod:useItem(collectibleType, rng, entityPlayer, useFlag, activeSlot, varData)
+
+end
+
+---comment
+---@param entity Entity
+function mod:PostEntityKill(entity)
+  -- if not isLemegetonWisp(entity:ToFamiliar()) then return end
+  -- local a = entity:ToFamiliar()
+  debugPrint(entity:ToFamiliar().Parent)
+end
+
+mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.OnPostRender)
+mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.PostPlayerInit)
+
+-- mod:AddCallback(ModCallbacks.MC_USE_ITEM, mod.useItem, CollectibleType.COLLECTIBLE_LEMEGETON)
+-- mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, mod.postEntityKill, EntityType.ENTITY_FAMILIAR)
 
 if debug then
-  mod:AddCallback(ModCallbacks.MC_USE_ITEM, mod.useItem, CollectibleType.COLLECTIBLE_LEMEGETON)
-  mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.setUpDebug)
+  mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.SetUpDebug)
+  -- mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.setUpDebug)
 end
