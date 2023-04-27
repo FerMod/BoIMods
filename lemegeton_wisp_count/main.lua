@@ -164,6 +164,15 @@ local function hudOffset()
   return offsetMultiplier * Options.HUDOffset + game.ScreenShakeOffset
 end
 
+---Whether the Font or Sprite is not `nil` and is loaded.
+---@param resource Font | Sprite
+local function isLoaded(resource)
+  if not resource then
+    return false
+  end
+  return resource:IsLoaded()
+end
+
 ---Draws to the screen the text with the number of wisps and the maximum number of wisp.
 ---@param font Font
 ---@param wispCount integer
@@ -206,10 +215,26 @@ function mod:UpdateCounterPosition(player)
   return position
 end
 
+---Pause animation if the game is paused. Otherwise, continue or resume animation.
+---@param sprite Sprite
+---@param animationName string? @default: "Idle"
+local function updateAnimation(sprite, animationName)
+  animationName = animationName or sprite:GetDefaultAnimation()
+
+  if game:IsPaused() then
+    sprite:Stop()
+  else
+    sprite:Play(animationName, false)
+    sprite:Update()
+  end
+end
+
 function mod:OnPostRender()
   if not game:GetHUD():IsVisible() then return end
-  if not mod.font then return end
-  if not mod.font:IsLoaded() then return end
+  if not isLoaded(mod.font) then return end
+  if not isLoaded(mod.sprite) then return end
+
+  updateAnimation(mod.sprite)
 
   local numPlayers = game:GetNumPlayers()
   for playerIndex = 0, numPlayers - 1 do
@@ -221,43 +246,31 @@ function mod:OnPostRender()
     end
   end
 
-  -- debugPrint(player:GetActiveItem(ActiveSlot.SLOT_PRIMARY))
-
-  debugPrint(dump(mod))
-end
-
----Called after a Player Entity is initialized.
----@param player EntityPlayer
-function mod:PostPlayerInit(player)
+---Load the font.
+function mod:LoadFont()
   if mod.font then return end
   mod.font = Font()
   mod.font:Load("font/luaminioutlined.fnt")
 end
 
----comment
----@param collectibleType CollectibleType
----@param rng RNG
----@param entityPlayer EntityPlayer
----@param useFlag UseFlag
----@param activeSlot ActiveSlot
----@param varData integer
-function mod:useItem(collectibleType, rng, entityPlayer, useFlag, activeSlot, varData)
-
+---Load the wisp sprite.
+function mod:LoadSprite()
+  if mod.sprite then return end
+  mod.sprite = Sprite()
+  mod.sprite:Load("gfx/wisp.anm2", true)
+  mod.sprite:Play("Idle")
+  mod.sprite.Color = Color(1, 1, 1, 0.5)
 end
 
----comment
----@param entity Entity
-function mod:PostEntityKill(entity)
-  -- if not isLemegetonWisp(entity:ToFamiliar()) then return end
-  -- local a = entity:ToFamiliar()
-  debugPrint(entity:ToFamiliar().Parent)
+---Called after a Player Entity is initialized.
+---@param player EntityPlayer
+function mod:PostPlayerInit(player)
+  mod:LoadFont()
+  mod:LoadSprite()
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.OnPostRender)
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.PostPlayerInit)
-
--- mod:AddCallback(ModCallbacks.MC_USE_ITEM, mod.useItem, CollectibleType.COLLECTIBLE_LEMEGETON)
--- mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, mod.postEntityKill, EntityType.ENTITY_FAMILIAR)
 
 if debug then
   mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.SetUpDebug)
