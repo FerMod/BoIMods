@@ -4,18 +4,29 @@
 local mod = RegisterMod("Lemegeton Wisp Count", 1)
 local game = Game()
 
--- do return end
-
 local offsetMultiplier = Vector(20, 12)
 
-mod.positionBookOfVirtues = Vector(34, -6)
-mod.position = Vector(10, 24)
--- mod.position = Vector(34, -6)
+mod.position = Vector(-12, -14)
+mod.alignment = Vector(0.5, 1)
+
+---@type table<integer, integer>
 mod.wispCount = {}
 mod.maxWisps = 26
+mod.fontColor = KColor(1, 1, 1, 1)
+---@type table<integer, Color>
+mod.playerColorize = {
+  Color(0, 0, 0, 0),   -- Default color
+  Color(0, 1, 2, 1),   -- Blue
+  Color(1, 2.5, 0, 1), -- Lime
+  Color(3, 2.5, 0, 1), -- Yellow
+  Color(3, 1.5, 1, 1), -- Orange
+  Color(3, 0, 0, 1),   -- Red
+  Color(0, 3, 0, 1),   -- Green
+  Color(2, 2, 2, 1),   -- White
+}
 
 ---Enables debug features like printing with `debugPrint`.
-local debug = true
+local debug = false
 
 ---Receives any number of arguments and prints their values to `stdout`.
 ---@param ... any
@@ -56,12 +67,18 @@ local function dump(object, indentLevel, indentStr)
   return s .. string.rep(indentStr, indentLevel - 1) .. '}'
 end
 
+function mod:DebugGiveLemegeton(player)
+  if not player:HasCollectible(CollectibleType.COLLECTIBLE_LEMEGETON) then
+    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
+  end
+end
+
 function mod:SetUpDebug()
   local numPlayers = game:GetNumPlayers()
   for playerIndex = 0, numPlayers - 1 do
     local player = game:GetPlayer(playerIndex)
     player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
-    -- player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
+    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
     -- player:AddCollectible(CollectibleType.COLLECTIBLE_HOURGLASS, 12, true, ActiveSlot.SLOT_SECONDARY)
     player:AddCollectible(CollectibleType.COLLECTIBLE_SCHOOLBAG)
     player:AddTrinket(TrinketType.TRINKET_DICE_BAG)
@@ -97,7 +114,15 @@ function mod:SetUpDebug()
     CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
     room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
   )
-
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,              -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
+    roomCenterPos + Vector(80, 0),         -- Position
+    Vector.Zero,                           -- Velocity
+    nil,                                   -- Parent
+    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
+    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
 
   Isaac.ExecuteCommand('keybinds 1')
   Isaac.ExecuteCommand('consolefade 1')
@@ -175,6 +200,7 @@ end
 ---Returns the current hud offset.
 ---@return Vector
 local function hudOffset()
+  --TODO get closest side of screen?
   return offsetMultiplier * Options.HUDOffset + game.ScreenShakeOffset
 end
 
@@ -187,51 +213,9 @@ local function isLoaded(resource)
   return resource:IsLoaded()
 end
 
----Draws to the screen the text with the number of wisps and the maximum number of wisp.
----@param font Font
----@param wispCount integer
----@param maxWispCount integer
----@param position Vector
-function DrawWispCountText(font, wispCount, maxWispCount, position)
-  local maxWispAmount = math.max(wispCount, maxWispCount)
-  local valueOutput = string.format("%1u/%u", wispCount, maxWispAmount)
-  local renderPosition = position + hudOffset()
-
-  font:DrawStringScaledUTF8(
-    valueOutput,        -- string String
-    renderPosition.X,   -- float PositionX,
-    renderPosition.Y,   -- float PositionY,
-    1,                  -- float ScaleX,
-    1,                  -- float ScaleY,
-    KColor(1, 1, 1, 1), -- KColor RenderColor,
-    22,                 -- int BoxWidth = 0,
-    true                -- boolean Center = false
-  )
-end
-
----Updates and returns the number of whisp that the player has.
----@param player EntityPlayer
----@return integer
-function mod:UpdateWispCount(player)
-  local wispCount = lemegetonWispCount(player)
-  mod.wispCount[GetPtrHash(player)] = wispCount
-  return wispCount
-end
-
----Updates and returns the draw position of whisp count.
----@param player EntityPlayer
----@return Vector
-function mod:UpdateCounterPosition(player)
-  local position = mod.position
-  if hasBookOfVirtues(player) then
-    position = mod.positionBookOfVirtues
-  end
-  return position
-end
-
 ---Pause animation if the game is paused. Otherwise, continue or resume animation.
 ---@param sprite Sprite
----@param animationName string? @default: "Idle"
+---@param animationName string? @default: The sprite default animation
 local function updateAnimation(sprite, animationName)
   animationName = animationName or sprite:GetDefaultAnimation()
 
@@ -243,37 +227,185 @@ local function updateAnimation(sprite, animationName)
   end
 end
 
+---Whether the HUD is visible.
+---@return boolean
+local function isHudVisible()
+  if not game:GetHUD():IsVisible() then
+    return false
+  end
+  if not Options.FoundHUD then
+    return false
+  end
+  if game:GetSeeds():HasSeedEffect(SeedEffect.SEED_NO_HUD) then
+    return false
+  end
+  return true
+end
+
+---Returns the player color with the given `playerIndex` index.
+---@param playerIndex integer
+---@return Color
+function mod:playerWispColor(playerIndex)
+  local colorize = mod.playerColorize[playerIndex + 1]
+
+  local color = Color(1, 1, 1, 1)
+  color:SetColorize(colorize.R, colorize.G, colorize.B, colorize.A)
+  return color
+end
+
+---Returns the position where the element aligns in the screen.
+---@return Vector
+function mod:GetAlignmentPosition()
+  local screenSize = Vector(Isaac.GetScreenWidth(), Isaac.GetScreenHeight())
+  return screenSize * mod.alignment
+end
+
+---The element position in the screen.
+---@return Vector
+function mod:GetPosition()
+  return self.position + mod:GetAlignmentPosition() + hudOffset()
+end
+
+---Draws to the screen the text with the number of wisps and the maximum number of wisp.
+---@param wispCount integer
+---@param maxWispCount integer
+---@param position Vector
+function mod:DrawWispCountText(wispCount, maxWispCount, position)
+  -- local maxWispAmount = math.min(wispCount, maxWispCount)
+  local valueOutput = string.format("%1u/%u", wispCount, maxWispCount)
+  self.font:DrawStringScaledUTF8(
+    valueOutput,    -- string String
+    position.X,     -- float PositionX,
+    position.Y,     -- float PositionY,
+    1,              -- float ScaleX,
+    1,              -- float ScaleY,
+    self.fontColor, -- KColor RenderColor,
+    0,              -- int BoxWidth = 0,
+    false           -- boolean Center = false
+  )
+end
+
+---Draws to the screen the text with the number of wisps and the maximum number of wisp.
+---@param playerNum integer
+---@param position Vector
+function mod:DrawNumPlayerText(playerNum, position)
+  mod.font:DrawStringScaledUTF8(
+    tostring(playerNum), -- string String
+    position.X,          -- float PositionX,
+    position.Y,          -- float PositionY,
+    0.5,                 -- float ScaleX,
+    0.5,                 -- float ScaleY,
+    KColor(1, 1, 1, 1),  -- KColor RenderColor,
+    0,                   -- int BoxWidth = 0,
+    false                -- boolean Center = false
+  )
+end
+
+---Updates and returns the number of whisp that the player has.
+---@param player EntityPlayer
+---@return integer?
+function mod:UpdateWispCount(player)
+  ---@type number?
+  local wispCount = lemegetonWispCount(player)
+  if not hasLemegeton(player) and wispCount == 0 then
+    wispCount = nil
+  end
+  mod.wispCount[GetPtrHash(player)] = wispCount
+  return wispCount
+end
+
+---Updates and returns the draw position of whisp count.
+---@param player EntityPlayer
+---@return Vector
+---@deprecated
+function mod:UpdateCounterPosition(player)
+  local position = mod:GetPosition()
+  if hasBookOfVirtues(player) then
+    position = mod.positionBookOfVirtues
+  end
+  return position
+end
+
+---Draw the wisp counter in a position on the screen. When `hasMultiplePlayers`
+---is not false, then the player number (`playerIndex + 1`) e wisps.
+---will be displayed
+---on top of the wisp to indicate to which player belongs th
+---The first player has a wisp with the original color, and the next players has
+---a wisp of different color.
+---@param position Vector
+---@param wispCount integer
+---@param playerIndex integer? @default: 0
+---@param hasMultiplePlayers boolean?  @default: false
+function mod:DrawWispCounter(position, wispCount, playerIndex, hasMultiplePlayers)
+  playerIndex = playerIndex or 0
+  hasMultiplePlayers = hasMultiplePlayers or false
+
+  local iconOffset = Vector(4, 6)
+  mod.sprite.Color = mod:playerWispColor(playerIndex)
+  mod.sprite:Render(position + iconOffset)
+
+  -- local position = mod:UpdateCounterPosition(player)
+
+  local fontOffset = Vector(iconOffset.X + 6, 0)
+  mod:DrawWispCountText(wispCount, mod.maxWisps, position + fontOffset)
+
+  if hasMultiplePlayers then
+    local playerNumOffset = Vector(3, iconOffset.Y / 2 + 2)
+    mod:DrawNumPlayerText(playerIndex + 1, position + playerNumOffset)
+  end
+end
+
 function mod:OnPostRender()
-  if not game:GetHUD():IsVisible() then return end
+  if not isHudVisible() then return end
   if not isLoaded(mod.font) then return end
   if not isLoaded(mod.sprite) then return end
 
   updateAnimation(mod.sprite)
 
+  local currentOffset = Vector.Zero
   local numPlayers = game:GetNumPlayers()
-  for playerIndex = 0, numPlayers - 1 do
+  local hasMultiplePlayers = numPlayers > 1
+  for playerIndex = numPlayers - 1, 0, -1 do
     local player = game:GetPlayer(playerIndex)
-    if hasLemegeton(player) then
-      local wispCount = mod:UpdateWispCount(player)
-      local position = mod:UpdateCounterPosition(player)
-      mod:DrawWispCountText(mod.font, wispCount, mod.maxWisps, position)
+    local wispCount = mod:UpdateWispCount(player)
+
+    if wispCount then
+      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum)
+      -- currentOffset = currentOffset + Vector(0, -10)
+
+      -- mod:ChangeSpriteColor(playerNum + 1)
+      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum + 1)
+      -- currentOffset = currentOffset + Vector(0, -10)
+
+      -- mod:ChangeSpriteColor(playerNum + 2)
+      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum + 2)
+      -- currentOffset = currentOffset + Vector(0, -10)
+
+      -- mod:ChangeSpriteColor(playerNum + 3)
+      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum + 3)
+      -- currentOffset = currentOffset + Vector(0, -10)
+      local position = mod:GetPosition()
+      mod:DrawWispCounter(position + currentOffset, wispCount, playerIndex, hasMultiplePlayers)
+      currentOffset = currentOffset + Vector(0, -10)
     end
   end
+end
 
 ---Load the font.
 function mod:LoadFont()
-  if mod.font then return end
+  if isLoaded(mod.font) then return end
   mod.font = Font()
   mod.font:Load("font/luaminioutlined.fnt")
 end
 
 ---Load the wisp sprite.
 function mod:LoadSprite()
-  if mod.sprite then return end
+  if isLoaded(mod.sprite) then return end
   mod.sprite = Sprite()
   mod.sprite:Load("gfx/wisp.anm2", true)
   mod.sprite:Play("Idle")
   mod.sprite.Color = Color(1, 1, 1, 0.5)
+  mod.sprite.Scale = Vector(0.5, 0.5)
 end
 
 ---Called after a Player Entity is initialized.
@@ -281,6 +413,8 @@ end
 function mod:PostPlayerInit(player)
   mod:LoadFont()
   mod:LoadSprite()
+
+  mod:DebugGiveLemegeton(player)
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.OnPostRender)
