@@ -24,32 +24,46 @@ end
 local data = defaultData()
 local hasInitialized = false
 
--- Enables debug features like printing with `debugPrint`.
-local debug = false
+---Enables debug features like printing with `debugPrint`.
+local debug = true
+
+---Receives any number of arguments and prints their values to `stdout`.
+---@param ... any
 local function debugPrint(...)
-  if (not debug) then return end
+  if not debug then return end
   print(...)
 end
 
+---Returns a `string` representation of `object`.
+---@param object any
+---@param indentLevel integer?
+---@param indentStr string?
+---@return string
 local function dump(object, indentLevel, indentStr)
-  if type(object) == 'table' then
-    indentLevel = indentLevel or 0
-    indentStr = indentStr or '  '
-
-    local currentIndentStr = ''
-    for i = 1, indentLevel do
-      currentIndentStr = currentIndentStr .. indentStr
+  local function quoteIfString(value)
+    if type(value) ~= "string" then
+      return tostring(value)
     end
-
-    local s = '{\n'
-    for k, v in pairs(object) do
-      if type(k) ~= 'number' then k = '"' .. k .. '"' end
-      s = s .. currentIndentStr .. '[' .. k .. '] = ' .. dump(v, indentLevel + 1) .. ',\n'
-    end
-    return s .. '}'
-  else
-    return tostring(object)
+    return '"' .. value .. '"'
   end
+
+  if type(object) ~= 'table' then
+    return quoteIfString(object)
+  end
+
+  indentLevel = indentLevel or 0
+  indentStr = indentStr or '  '
+
+  local s = '{'
+  if next(object) then
+    s = s .. '\n'
+  end
+
+  local currentIndentStr = string.rep(indentStr, indentLevel)
+  for k, v in pairs(object) do
+    s = s .. currentIndentStr .. '[' .. quoteIfString(k) .. '] = ' .. dump(v, indentLevel + 1) .. ',\n'
+  end
+  return s .. string.rep(indentStr, indentLevel - 1) .. '}'
 end
 
 ---Whether is a Repentance stage type.
