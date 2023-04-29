@@ -414,6 +414,7 @@ function mod:PostPlayerInit(player)
   mod:LoadFont()
   mod:LoadSprite()
 
+  if not debug then return end
   mod:DebugGiveLemegeton(player)
 end
 
