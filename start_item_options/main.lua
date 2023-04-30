@@ -25,7 +25,7 @@ local data = defaultData()
 local hasInitialized = false
 
 ---Enables debug features like printing with `debugPrint`.
-local debug = true
+local debug = false
 
 ---Receives any number of arguments and prints their values to `stdout`.
 ---@param ... any
