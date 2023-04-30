@@ -301,31 +301,6 @@ function mod:DrawNumPlayerText(playerNum, position)
   )
 end
 
----Updates and returns the number of whisp that the player has.
----@param player EntityPlayer
----@return integer?
-function mod:UpdateWispCount(player)
-  ---@type number?
-  local wispCount = lemegetonWispCount(player)
-  if not hasLemegeton(player) and wispCount == 0 then
-    wispCount = nil
-  end
-  mod.wispCount[GetPtrHash(player)] = wispCount
-  return wispCount
-end
-
----Updates and returns the draw position of whisp count.
----@param player EntityPlayer
----@return Vector
----@deprecated
-function mod:UpdateCounterPosition(player)
-  local position = mod:GetPosition()
-  if hasBookOfVirtues(player) then
-    position = mod.positionBookOfVirtues
-  end
-  return position
-end
-
 ---Draw the wisp counter in a position on the screen. When `hasMultiplePlayers`
 ---is not false, then the player number (`playerIndex + 1`) e wisps.
 ---will be displayed
@@ -353,6 +328,31 @@ function mod:DrawWispCounter(position, wispCount, playerIndex, hasMultiplePlayer
     local playerNumOffset = Vector(3, iconOffset.Y / 2 + 2)
     mod:DrawNumPlayerText(playerIndex + 1, position + playerNumOffset)
   end
+end
+
+---Updates and returns the number of whisp that the player has.
+---@param player EntityPlayer
+---@return integer?
+function mod:UpdateWispCount(player)
+  ---@type number?
+  local wispCount = lemegetonWispCount(player)
+  if not hasLemegeton(player) and wispCount == 0 then
+    wispCount = nil
+  end
+  mod.wispCount[GetPtrHash(player)] = wispCount
+  return wispCount
+end
+
+---Updates and returns the draw position of whisp count.
+---@param player EntityPlayer
+---@return Vector
+---@deprecated
+function mod:UpdateCounterPosition(player)
+  local position = mod:GetPosition()
+  if hasBookOfVirtues(player) then
+    position = mod.positionBookOfVirtues
+  end
+  return position
 end
 
 function mod:OnPostRender()
