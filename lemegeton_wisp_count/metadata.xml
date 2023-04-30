@@ -6,7 +6,7 @@
     <description>This mod adds a counter for the number of wisps spawned by the Lemegeton item.
 
 [quote]You can find the source code [url=https://github.com/FerMod/BoIMods/blob/main/lemegeton_wisp_count]here[/url][/quote]</description>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <visibility>Friends Only</visibility>
     <tag id="Lua"/>
     <tag id="Active Items"/>
