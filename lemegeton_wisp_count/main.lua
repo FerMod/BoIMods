@@ -403,8 +403,6 @@ function mod:LoadSprite()
   if isLoaded(mod.sprite) then return end
   mod.sprite = Sprite()
   mod.sprite:Load("gfx/wisp.anm2", true)
-  mod.sprite:Play(mod.sprite:GetDefaultAnimation())
-  mod.sprite.Color = Color(1, 1, 1, 0.5)
   mod.sprite.Scale = Vector(0.5, 0.5)
 end
 
