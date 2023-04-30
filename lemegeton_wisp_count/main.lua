@@ -245,8 +245,8 @@ end
 ---Returns the player color with the given `playerIndex` index.
 ---@param playerIndex integer
 ---@return Color
-function mod:playerWispColor(playerIndex)
-  local colorize = mod.playerColorize[playerIndex + 1]
+function mod:PlayerWispColor(playerIndex)
+  local colorize = mod.playerColorize[playerIndex + 1] or mod.playerColorize[1]
 
   local color = Color(1, 1, 1, 1)
   color:SetColorize(colorize.R, colorize.G, colorize.B, colorize.A)
@@ -341,7 +341,7 @@ function mod:DrawWispCounter(position, wispCount, playerIndex, hasMultiplePlayer
   hasMultiplePlayers = hasMultiplePlayers or false
 
   local iconOffset = Vector(4, 6)
-  mod.sprite.Color = mod:playerWispColor(playerIndex)
+  mod.sprite.Color = mod:PlayerWispColor(playerIndex)
   mod.sprite:Render(position + iconOffset)
 
   -- local position = mod:UpdateCounterPosition(player)
