@@ -198,10 +198,11 @@ local function lemegetonWispCount(player)
 end
 
 ---Returns the current hud offset.
+---@param multiplier Vector The `Vector` to define by how much is multiplied the
+---offset.
 ---@return Vector
-local function hudOffset()
-  --TODO get closest side of screen?
-  return offsetMultiplier * Options.HUDOffset + game.ScreenShakeOffset
+local function hudOffset(multiplier)
+  return multiplier * Options.HUDOffset + game.ScreenShakeOffset
 end
 
 ---Whether the Font or Sprite is not `nil` and is loaded.
@@ -260,10 +261,36 @@ function mod:GetAlignmentPosition()
   return screenSize * mod.alignment
 end
 
----The element position in the screen.
+---Returns the offset direction.
+---@return Vector
+function mod:GetOffsetDirection()
+  local direction = Vector(0.5, 0.5) - mod.alignment
+
+  if direction.X < 0 then
+    -- Offset should move left
+    direction.X = -1
+  elseif direction.X > 0 then
+    -- Offset should move right
+    direction.X = 1
+  end
+
+  if direction.Y < 0 then
+    -- Offset should move up
+    direction.Y = -1
+  elseif direction.Y > 0 then
+    -- Offset should move down
+    direction.Y = 1
+  end
+
+  return direction
+end
+
+---Returns the element position aligned in the screen.
 ---@return Vector
 function mod:GetPosition()
-  return self.position + mod:GetAlignmentPosition() + hudOffset()
+  local screenPosition = mod.position + mod:GetAlignmentPosition()
+  local offsetDirection = mod:GetOffsetDirection()
+  return screenPosition + hudOffset(offsetMultiplier * offsetDirection)
 end
 
 ---Draws to the screen the text with the number of wisps and the maximum number of wisp.
@@ -411,9 +438,6 @@ end
 function mod:PostPlayerInit(player)
   mod:LoadFont()
   mod:LoadSprite()
-
-  if not debug then return end
-  mod:DebugGiveLemegeton(player)
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.OnPostRender)
@@ -421,5 +445,5 @@ mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.PostPlayerInit)
 
 if debug then
   mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.SetUpDebug)
-  -- mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.setUpDebug)
+  mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.DebugGiveLemegeton)
 end
