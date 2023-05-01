@@ -97,12 +97,7 @@ local function isRepentanceStage(stageType)
   end
   return false
 end
----After effect init.
----@param effect EntityEffect
-function mod:PostEffecInit(effect)
-  if not isEnemyCreep(effect) then return end
-  mod:LoadEffectSprite(effect)
-end
+
 
 ---Loads the sprite for the given effect and returns it. The sprite is stored in
 ---the cache for later use.
@@ -144,6 +139,14 @@ function mod:DrawEffectSprite(effect, position)
   sprite.Scale = effect:GetSprite().Scale
   sprite:Update()
   sprite:Render(position)
+end
+
+---After effect init.
+---@param effect EntityEffect
+function mod:PostEffecInit(effect)
+  if not isEnemyCreep(effect) then return end
+  if not mod:IsEffectSpriteLoaded(effect) then return end
+  mod:LoadEffectSprite(effect)
 end
 
 ---After effect rendering.
