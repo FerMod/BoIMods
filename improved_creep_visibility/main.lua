@@ -15,6 +15,7 @@ mod.creepEffectVariant = {
 }
 
 
+---@type table<integer, Sprite>
 mod.effectSpriteCache = {}
 
 ---Enables debug features like printing with `debugPrint`.
@@ -84,106 +85,29 @@ local function isEnemyCreep(effect)
   return mod.creepEffectVariant[effect.Variant] == true
 end
 
----@param color Color
----@param step integer
----@return Color
-local function nextRainbowColor(color, step)
-  local result = color or Color(0, 0, 0)
-  if (result.R > 0 and result.B == 0) then
-    result.R = result.R - step
-    result.G = result.G + step
+---Whether is a Repentance stage type.
+---@param stageType StageType
+---@return boolean
+local function isRepentanceStage(stageType)
+  if (stageType == StageType.STAGETYPE_REPENTANCE) then
+    return true
   end
-  if (result.G > 0 and result.R == 0) then
-    result.G = result.G - step
-    result.B = result.B + step
+  if (stageType == StageType.STAGETYPE_REPENTANCE_B) then
+    return true
   end
-  if (result.B > 0 and result.G == 0) then
-    result.R = result.R + step
-    result.B = result.B - step
-  end
-  print(result.R, result.G, result.B)
-  return result
+  return false
 end
-
-local invert = false
-local invertCount = 0
-local invertSteps = 1000
-
----comment
----@param effect EntityEffect
-local function lerpEffectColor(effect)
-  local sprite = effect:GetSprite()
-  local color = Color(1, 1, 1, 1, 0, 0, 0)
-  color:SetColorize(1, 1, 1, 2 * (invertCount / invertSteps))
-  sprite.Color = color
-
-  if invert then
-    invertCount = invertCount - 1
-  else
-    invertCount = invertCount + 1
-  end
-
-  if (invertCount % invertSteps == 0) then
-    invert = not invert
-  end
-end
-
--- local function deepcopy(orig)
---   local orig_type = type(orig)
---   local copy
---   if orig_type == 'table' then
---     copy = {}
---     for orig_key, orig_value in next, orig, nil do
---       copy[deepcopy(orig_key)] = deepcopy(orig_value)
---     end
---     setmetatable(copy, deepcopy(getmetatable(orig)))
---   else -- number, string, boolean, etc
---     copy = orig
---   end
---   return copy
--- end
-
 ---After effect init.
 ---@param effect EntityEffect
 function mod:PostEffecInit(effect)
-  --print('IsEnemyCreep(' .. tostring(effect.Variant) .. '): ', IsEnemyCreep(effect))
-  if isEnemyCreep(effect) then
-    -- local originalSprite = effect:GetSprite()
-    -- local sprite = Sprite()
-    -- sprite:Load(originalSprite:GetFilename(), true)
-    -- sprite:ReplaceSpritesheet(1, "gfx/creep_effect.png")
-    -- sprite:LoadGraphics()
-    -- currentStep = currentStep + stepSize
-    -- sprite.Color = nextRainbowColor(Color(sprite.Color.R, sprite.Color.G, sprite.Color.B), currentStep)
-    -- invert = not invert
-    -- local color = Color(1, 1, 1, 1, 0, 0, 0)
-    -- color:SetColorize(1, 1, 1, 2)
-    -- local sprite = effect:GetSprite()
-    -- sprite.Color = color
-    -- debugPrint(effect:GetSprite():GetFilename())
-    -- local customEffect = Isaac.Spawn(
-    --   effect.Type,
-    --   effect.Variant,
-    --   effect.SubType,
-    --   effect.ParentOffset,
-    --   effect.Velocity,
-    --   effect.SpawnerEntity
-    -- )
-    -- mod.effects[GetPtrHash(customEffect)] = true
-
-    -- local customCreep = Sprite()
-    -- customCreep:Load("gfx/1000.022_creep (red).anm2", true)
-    -- customCreep:ReplaceSpritesheet(1, "gfx/creep_effect.png")
-    -- customCreep:LoadGraphics()
-  end
-
-  -- print(Effect.IsPlayerCreep(EffectVariant.CREEP_RED))
+  if not isEnemyCreep(effect) then return end
+  mod:LoadEffectSprite(effect)
 end
 
 ---Loads the sprite for the given effect and returns it. The sprite is stored in
 ---the cache for later use.
 ---@param effect EntityEffect
-function mod:GetEffectSprite(effect)
+function mod:LoadEffectSprite(effect)
   local effectHash = GetPtrHash(effect)
   local sprite = mod.effectSpriteCache[effectHash]
   if not sprite then
@@ -201,50 +125,40 @@ function mod:GetEffectSprite(effect)
   return sprite
 end
 
+---Whether the sprite is loaded.
+---@param effect EntityEffect
+function mod:IsEffectSpriteLoaded(effect)
+  local sprite = mod.effectSpriteCache[GetPtrHash(effect)]
+  if not sprite then
+    return false
+  end
+
+  return sprite:IsLoaded()
+end
+
+---Draws the effect sprite to the given position.
+---@param effect EntityEffect
+---@param position Vector
+function mod:DrawEffectSprite(effect, position)
+  local sprite = mod:LoadEffectSprite(effect)
+  sprite.Scale = effect:GetSprite().Scale
+  sprite:Update()
+  sprite:Render(position)
+end
+
 ---After effect rendering.
 ---@param effect EntityEffect
 ---@param offset Vector
 function mod:PostEffectRender(effect, offset)
   if not isEnemyCreep(effect) then return end
+  if not mod:IsEffectSpriteLoaded(effect) then return end
 
-  -- lerpEffectColor(effect)
-
-  ---@type Sprite
-  local effectSprite = effect:GetSprite()
+  -- local effectSprite = effect:GetSprite()
   -- effectSprite:ReplaceSpritesheet(0, "gfx/creep_effect.png")
   -- effectSprite:LoadGraphics()
 
-  local sprite = mod:GetEffectSprite(effect)
-  sprite.Scale = effectSprite.Scale
-  sprite:Update()
-  sprite:Render(Isaac.WorldToRenderPosition(effect.Position + offset))
-  -- local customEffect = Isaac.Spawn(
-  --   effect.Type,
-  --   effect.Variant,
-  --   effect.SubType,
-  --   effect.ParentOffset,
-  --   effect.Velocity,
-  --   effect.SpawnerEntity
-  -- )
-  -- mod.effects[GetPtrHash(customEffect)] = true
-
-  -- local customCreep = Sprite()
-  -- customCreep:Load("gfx/1000.022_creep (red).anm2", true)
-  -- customEffect:GetSprite():ReplaceSpritesheet(1, "gfx/creep_effect.png")
-  -- customEffect:GetSprite():LoadGraphics()
-  -- print(effect:GetSprite():GetOverlayFrame())
-
-  -- local originalColor = effect.Color
-  -- local originalSpriteScale = effect.SpriteScale
-
-  -- local color = Color(1, 1, 1, 1, 0, 0, 0)
-  -- color:SetColorize(4, 0, 4, 1)
-  -- effect.Color = color
-  -- effect.Scale = 1.2
-  --sprite:Render(offset)
-
-  -- effect.SpriteScale = originalSpriteScale
-  -- effect.Color = originalColor
+  local position = Isaac.WorldToRenderPosition(effect.Position + offset)
+  mod:DrawEffectSprite(effect, position)
 end
 
 ---Called whenever an Entity gets removed by the game.
@@ -254,17 +168,12 @@ function mod:PostEntityRemove(entity)
   mod.effectSpriteCache[GetPtrHash(entity)] = nil
 end
 
--- mod:AddCallback(ModCallbacks.MC_GET_SHADER_PARAMS, mod.GetShaderParams)
--- mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.PostNewLevel)
 mod:AddCallback(ModCallbacks.MC_POST_EFFECT_INIT, mod.PostEffecInit)
 mod:AddCallback(ModCallbacks.MC_POST_EFFECT_RENDER, mod.PostEffectRender)
 mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, mod.PostEntityRemove, EntityType.ENTITY_EFFECT)
--- mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.PostRender)
 
 -- From here on, only debug code
-if not debug then
-  return
-end
+if not debug then return end
 
 local setupDone = false
 function mod:SetUpDebug()
