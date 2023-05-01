@@ -14,7 +14,7 @@ mod.creepEffectVariant = {
   [EffectVariant.CREEP_LIQUID_POOP]            = false,
 }
 
-
+---Cached effect sprites, used when rendering.
 ---@type table<integer, Sprite>
 mod.effectSpriteCache = {}
 
@@ -58,18 +58,6 @@ local function dump(object, indentLevel, indentStr)
     s = s .. currentIndentStr .. '[' .. quoteIfString(k) .. '] = ' .. dump(v, indentLevel + 1) .. ',\n'
   end
   return s .. string.rep(indentStr, indentLevel - 1) .. '}'
-end
-
-
-
-function mod:GetShaderParams(shaderName)
-  if shaderName == 'VortexStreet' then
-    local params = {
-      Enabled = 1,
-      Time = Isaac.GetFrameCount()
-    }
-    return params;
-  end
 end
 
 ---Whether the `EntityEffect` is a type of creep from an enemy.
