@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <name>Improved Creep Visibility</name>
+    <directory>improved_creep_visibility</directory>
+    <id></id>
+    <description>[quote]You can find the source code [url=https://github.com/FerMod/BoIMods/blob/main/improved_creep_visibility]here[/url][/quote]</description>
+    <version>0.1.0</version>
+    <visibility>Friends Only</visibility>
+    <tag id="Lua"/>
+    <tag id="Enemies"/>
+    <tag id="Hazards"/>
+    <tag id="Tweaks"/>
+    <tag id="Graphics"/>
+</metadata>
