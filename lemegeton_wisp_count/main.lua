@@ -17,7 +17,7 @@ mod.maxWisps = 26
 ---The wisp count display font.
 ---@type Font?
 mod.font = nil
-mod.fontColor = KColor(1, 1, 1, 1)
+mod.fontColor = KColor(1, 1, 1, 1) -- White
 
 ---The wisp count display icon sprite.
 ---@type Sprite?
