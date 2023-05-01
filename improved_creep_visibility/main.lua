@@ -163,16 +163,15 @@ mod:AddCallback(ModCallbacks.MC_POST_EFFECT_INIT, mod.PostEffecInit)
 mod:AddCallback(ModCallbacks.MC_POST_EFFECT_RENDER, mod.PostEffectRender)
 mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, mod.PostEntityRemove, EntityType.ENTITY_EFFECT)
 
--- From here on, only debug code
+-- Only debug code from here on
 if not debug then return end
 
-local setupDone = false
 function mod:SetUpDebug()
-  setupDone = true
   local player = Isaac.GetPlayer()
   player:AddCollectible(CollectibleType.COLLECTIBLE_PUNCHING_BAG)
   player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
   player:AddCollectible(CollectibleType.COLLECTIBLE_CAMO_UNDIES)
+  player:AddCollectible(CollectibleType.COLLECTIBLE_DADS_KEY)
 
   local enemy = game:Spawn(
     EntityType.ENTITY_BRAIN,       -- Type
@@ -184,13 +183,9 @@ function mod:SetUpDebug()
     game:GetRoom():GetSpawnSeed()  -- Seed
   )
 
-  local entities = Isaac.GetRoomEntities()
-  for _, value in pairs(entities) do
-    debugPrint(value.Type)
-    if value:IsEnemy() then
-      debugPrint('Entity data:', dump(value:GetData()))
-    end
-  end
+  Isaac.ExecuteCommand('debug 3')
+  Isaac.ExecuteCommand('debug 4')
+  Isaac.ExecuteCommand('debug 8')
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.SetUpDebug)
