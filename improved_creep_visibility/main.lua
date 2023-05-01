@@ -1,6 +1,8 @@
 local mod = RegisterMod("Improved Creep Visibility", 1)
 local game = Game()
 
+---A table with the type of creep that will have the visibility change.
+---@type table<BackdropType, boolean>
 mod.creepEffectVariant = {
   [EffectVariant.CREEP_RED]                    = true,
   [EffectVariant.CREEP_GREEN]                  = true,
@@ -14,9 +16,17 @@ mod.creepEffectVariant = {
   [EffectVariant.CREEP_LIQUID_POOP]            = false,
 }
 
+---A table that contains which backdrops should have the sprite render enabled.
+---@type table<BackdropType, boolean>
+mod.enabledBackdrop = {
+  [BackdropType.WOMB]  = true,
+  [BackdropType.UTERO] = true,
+}
+
 ---Cached effect sprites, used when rendering.
 ---@type table<integer, Sprite>
 mod.effectSpriteCache = {}
+mod.spriteColor = Color(1, 1, 1, 0.5)
 
 ---Enables debug features like printing with `debugPrint`.
 local debug = true
@@ -73,19 +83,14 @@ local function isEnemyCreep(effect)
   return mod.creepEffectVariant[effect.Variant] == true
 end
 
----Whether is a Repentance stage type.
----@param stageType StageType
+---Whether the effect sprite should enable for the current room backdrop.
 ---@return boolean
-local function isRepentanceStage(stageType)
-  if (stageType == StageType.STAGETYPE_REPENTANCE) then
-    return true
-  end
-  if (stageType == StageType.STAGETYPE_REPENTANCE_B) then
-    return true
-  end
-  return false
+function mod:IsEnabledForCurrentBackdrop()
+  local level = game:GetLevel()
+  local room = level:GetCurrentRoom()
+  local backdrop = room:GetBackdropType()
+  return mod.enabledBackdrop[backdrop] == true
 end
-
 
 ---Loads the sprite for the given effect and returns it. The sprite is stored in
 ---the cache for later use.
@@ -100,8 +105,7 @@ function mod:LoadEffectSprite(effect)
     sprite:Load(effectSprite:GetFilename(), true)
     sprite:ReplaceSpritesheet(0, "gfx/creep_effect.png")
     sprite:LoadGraphics()
-    sprite:SetFrame(effectSprite:GetAnimation(), effectSprite:GetFrame())
-    sprite.Color = Color(1, 1, 1, 0.4)
+    sprite.Color = mod.spriteColor
 
     mod.effectSpriteCache[effectHash] = sprite
   end
@@ -123,17 +127,36 @@ end
 ---@param effect EntityEffect
 ---@param position Vector
 function mod:DrawEffectSprite(effect, position)
+  local effectSprite = effect:GetSprite()
   local sprite = mod:LoadEffectSprite(effect)
-  sprite.Scale = effect:GetSprite().Scale
-  sprite:Update()
+  sprite:SetFrame(effectSprite:GetAnimation(), effectSprite:GetFrame())
+  -- if effectSprite.Scale.X < Vector.One.X or effectSprite.Scale.Y < Vector.One.Y then
+  --   mod.effectSpriteCache[GetPtrHash(effectSprite)] = nil
+  --   return
+  -- end
+  sprite.Color = Color(
+    mod.spriteColor.R,
+    mod.spriteColor.G,
+    mod.spriteColor.B,
+    mod.spriteColor.A * effectSprite.Color
+  )
+  sprite.Scale = effectSprite.Scale
+  sprite.Rotation = effectSprite.Rotation
+  sprite.FlipX = effectSprite.FlipX
+  sprite.FlipY = effectSprite.FlipY
+  sprite.PlaybackSpeed = effectSprite.PlaybackSpeed
+  sprite.Rotation = effectSprite.Rotation
+  sprite.Offset = effectSprite.Offset
+
   sprite:Render(position)
 end
 
 ---After effect init.
 ---@param effect EntityEffect
 function mod:PostEffecInit(effect)
+  if not mod:IsEnabledForCurrentBackdrop() then return end
   if not isEnemyCreep(effect) then return end
-  if not mod:IsEffectSpriteLoaded(effect) then return end
+  if mod:IsEffectSpriteLoaded(effect) then return end
   mod:LoadEffectSprite(effect)
 end
 
@@ -141,7 +164,6 @@ end
 ---@param effect EntityEffect
 ---@param offset Vector
 function mod:PostEffectRender(effect, offset)
-  if not isEnemyCreep(effect) then return end
   if not mod:IsEffectSpriteLoaded(effect) then return end
 
   -- local effectSprite = effect:GetSprite()
@@ -166,7 +188,7 @@ mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, mod.PostEntityRemove, Entity
 -- Only debug code from here on
 if not debug then return end
 
-function mod:SetUpDebug()
+function mod:DebugPostNewLevel()
   local player = Isaac.GetPlayer()
   player:AddCollectible(CollectibleType.COLLECTIBLE_PUNCHING_BAG)
   player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
@@ -183,9 +205,21 @@ function mod:SetUpDebug()
     game:GetRoom():GetSpawnSeed()  -- Seed
   )
 
+  Isaac.ExecuteCommand('keybinds 1')
   Isaac.ExecuteCommand('debug 3')
   Isaac.ExecuteCommand('debug 4')
   Isaac.ExecuteCommand('debug 8')
 end
 
-mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.SetUpDebug)
+function mod:DebugPostPlayerInit(player)
+  local level = game:GetLevel()
+  level:SetNextStage()
+  level:SetNextStage()
+  level:SetNextStage()
+  level:SetNextStage()
+  level:SetNextStage()
+  level:SetNextStage()
+end
+
+mod:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, mod.DebugPostNewLevel)
+mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.DebugPostPlayerInit)
