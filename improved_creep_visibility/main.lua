@@ -138,7 +138,7 @@ function mod:DrawEffectSprite(effect, position)
     mod.spriteColor.R,
     mod.spriteColor.G,
     mod.spriteColor.B,
-    mod.spriteColor.A * effectSprite.Color
+    mod.spriteColor.A * effectSprite.Color.A
   )
   sprite.Scale = effectSprite.Scale
   sprite.Rotation = effectSprite.Rotation
