@@ -5,10 +5,10 @@ local game = Game()
 ---@type table<BackdropType, boolean>
 mod.creepEffectVariant = {
   [EffectVariant.CREEP_RED]                    = true,
-  [EffectVariant.CREEP_GREEN]                  = true,
-  [EffectVariant.CREEP_YELLOW]                 = true,
-  [EffectVariant.CREEP_WHITE]                  = true,
-  [EffectVariant.CREEP_BLACK]                  = true,
+  [EffectVariant.CREEP_GREEN]                  = false,
+  [EffectVariant.CREEP_YELLOW]                 = false,
+  [EffectVariant.CREEP_WHITE]                  = false,
+  [EffectVariant.CREEP_BLACK]                  = false,
   [EffectVariant.CREEP_BROWN]                  = false,
   [EffectVariant.CREEP_SLIPPERY_BROWN]         = false,
   [EffectVariant.CREEP_SLIPPERY_BROWN_GROWING] = false,
