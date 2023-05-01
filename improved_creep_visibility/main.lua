@@ -29,7 +29,7 @@ mod.effectSpriteCache = {}
 mod.spriteColor = Color(1, 1, 1, 0.5)
 
 ---Enables debug features like printing with `debugPrint`.
-local debug = true
+local debug = false
 
 ---Receives any number of arguments and prints their values to `stdout`.
 ---@param ... any
