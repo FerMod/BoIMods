@@ -9,11 +9,19 @@ local offsetMultiplier = Vector(20, 12)
 mod.position = Vector(-12, -14)
 mod.alignment = Vector(0.5, 1)
 
+---A table of player pointer hash and the number of wisps that owns that player.
 ---@type table<integer, integer>
 mod.wispCount = {}
 mod.maxWisps = 26
+
+---The wisp count display font.
+---@type Font?
+mod.font = nil
 mod.fontColor = KColor(1, 1, 1, 1)
----@type table<integer, Color>
+
+---The wisp count display icon sprite.
+---@type Sprite?
+mod.sprite = nil
 mod.playerColorize = {
   Color(0, 0, 0, 0),   -- Default color
   Color(0, 1, 2, 1),   -- Blue
@@ -206,7 +214,7 @@ local function hudOffset(multiplier)
 end
 
 ---Whether the Font or Sprite is not `nil` and is loaded.
----@param resource Font | Sprite
+---@param resource (Font | Sprite)?
 local function isLoaded(resource)
   if not resource then
     return false
@@ -421,14 +429,14 @@ end
 ---Load the font.
 function mod:LoadFont()
   if isLoaded(mod.font) then return end
-  mod.font = Font()
+  mod.font = mod.font or Font()
   mod.font:Load("font/luaminioutlined.fnt")
 end
 
 ---Load the wisp sprite.
 function mod:LoadSprite()
   if isLoaded(mod.sprite) then return end
-  mod.sprite = Sprite()
+  mod.sprite = mod.sprite or Sprite()
   mod.sprite:Load("gfx/wisp.anm2", true)
   mod.sprite.Scale = Vector(0.5, 0.5)
 end
