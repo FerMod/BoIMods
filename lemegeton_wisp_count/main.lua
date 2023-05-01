@@ -405,20 +405,6 @@ function mod:OnPostRender()
     local wispCount = mod:UpdateWispCount(player)
 
     if wispCount then
-      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum)
-      -- currentOffset = currentOffset + Vector(0, -10)
-
-      -- mod:ChangeSpriteColor(playerNum + 1)
-      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum + 1)
-      -- currentOffset = currentOffset + Vector(0, -10)
-
-      -- mod:ChangeSpriteColor(playerNum + 2)
-      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum + 2)
-      -- currentOffset = currentOffset + Vector(0, -10)
-
-      -- mod:ChangeSpriteColor(playerNum + 3)
-      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum + 3)
-      -- currentOffset = currentOffset + Vector(0, -10)
       local position = mod:GetPosition()
       mod:DrawWispCounter(position + currentOffset, wispCount, playerIndex, hasMultiplePlayers)
       currentOffset = currentOffset + Vector(0, -10)
@@ -451,7 +437,8 @@ end
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.OnPostRender)
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.PostPlayerInit)
 
-if debug then
-  mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.SetUpDebug)
-  mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.DebugGiveLemegeton)
-end
+-- Only debug code from here on
+if not debug then return end
+
+mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.SetUpDebug)
+mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.DebugGiveLemegeton)
