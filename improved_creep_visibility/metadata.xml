@@ -2,9 +2,11 @@
 <metadata>
     <name>Improved Creep Visibility</name>
     <directory>improved_creep_visibility</directory>
-    <id></id>
-    <description>[quote]You can find the source code [url=https://github.com/FerMod/BoIMods/blob/main/improved_creep_visibility]here[/url][/quote]</description>
-    <version>1.0.0</version>
+    <id>2970129915</id>
+    <description>This mod changes how the creep is displayed in some of the levels to increase the visibility against same color floors.
+
+[quote]You can find the source code [url=https://github.com/FerMod/BoIMods/blob/main/improved_creep_visibility]here[/url][/quote]</description>
+    <version>1.0.1</version>
     <visibility>Friends Only</visibility>
     <tag id="Lua"/>
     <tag id="Enemies"/>
