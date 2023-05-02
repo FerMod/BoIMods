@@ -83,15 +83,6 @@ local function isEnemyCreep(effect)
   return mod.creepEffectVariant[effect.Variant] == true
 end
 
----Whether the effect sprite should enable for the current room backdrop.
----@return boolean
-function mod:IsEnabledForCurrentBackdrop()
-  local level = game:GetLevel()
-  local room = level:GetCurrentRoom()
-  local backdrop = room:GetBackdropType()
-  return mod.enabledBackdrop[backdrop] == true
-end
-
 ---Loads the sprite for the given effect and returns it. The sprite is stored in
 ---the cache for later use.
 ---@param effect EntityEffect
@@ -149,6 +140,15 @@ function mod:DrawEffectSprite(effect, position)
   sprite.Offset = effectSprite.Offset
 
   sprite:Render(position)
+end
+
+---Whether the effect sprite should enable for the current room backdrop.
+---@return boolean
+function mod:IsEnabledForCurrentBackdrop()
+  local level = game:GetLevel()
+  local room = level:GetCurrentRoom()
+  local backdrop = room:GetBackdropType()
+  return mod.enabledBackdrop[backdrop] == true
 end
 
 ---After effect init.
