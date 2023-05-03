@@ -6,7 +6,7 @@ local game = Game()
 
 local offsetMultiplier = Vector(20, 12)
 
-mod.position = Vector(-12, -14)
+mod.position = Vector(-18, -14)
 mod.alignment = Vector(0.5, 1)
 
 ---A table of player pointer hash and the number of wisps that owns that player.
