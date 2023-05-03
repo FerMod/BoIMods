@@ -75,71 +75,6 @@ local function dump(object, indentLevel, indentStr)
   return s .. string.rep(indentStr, indentLevel - 1) .. '}'
 end
 
-function mod:DebugGiveLemegeton(player)
-  if not player:HasCollectible(CollectibleType.COLLECTIBLE_LEMEGETON) then
-    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
-  end
-end
-
-function mod:SetUpDebug()
-  local numPlayers = game:GetNumPlayers()
-  for playerIndex = 0, numPlayers - 1 do
-    local player = game:GetPlayer(playerIndex)
-    player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
-    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
-    -- player:AddCollectible(CollectibleType.COLLECTIBLE_HOURGLASS, 12, true, ActiveSlot.SLOT_SECONDARY)
-    player:AddCollectible(CollectibleType.COLLECTIBLE_SCHOOLBAG)
-    player:AddTrinket(TrinketType.TRINKET_DICE_BAG)
-    -- player:AddPill(PillColor.PILL_BLUE_BLUE)
-  end
-
-  local room = game:GetRoom()
-  local roomCenterPos = room:GetCenterPos()
-  game:Spawn(
-    EntityType.ENTITY_PICKUP,                    -- Type
-    PickupVariant.PICKUP_COLLECTIBLE,            -- Variant
-    roomCenterPos - Vector(40, 0),               -- Position
-    Vector.Zero,                                 -- Velocity
-    nil,                                         -- Parent
-    CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES, -- SubType
-    room:GetSpawnSeed()                          -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
-  )
-  game:Spawn(
-    EntityType.ENTITY_PICKUP,                  -- Type
-    PickupVariant.PICKUP_COLLECTIBLE,          -- Variant
-    roomCenterPos - Vector(80, 0),             -- Position
-    Vector.Zero,                               -- Velocity
-    nil,                                       -- Parent
-    CollectibleType.COLLECTIBLE_DECK_OF_CARDS, -- SubType
-    room:GetSpawnSeed()                        -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
-  )
-  game:Spawn(
-    EntityType.ENTITY_PICKUP,              -- Type
-    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
-    roomCenterPos + Vector(30, 0),         -- Position
-    Vector.Zero,                           -- Velocity
-    nil,                                   -- Parent
-    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
-    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
-  )
-  game:Spawn(
-    EntityType.ENTITY_PICKUP,              -- Type
-    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
-    roomCenterPos + Vector(80, 0),         -- Position
-    Vector.Zero,                           -- Velocity
-    nil,                                   -- Parent
-    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
-    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
-  )
-
-  Isaac.ExecuteCommand('keybinds 1')
-  Isaac.ExecuteCommand('consolefade 1')
-  Isaac.ExecuteCommand('pauseonfocuslost 0')
-  Isaac.ExecuteCommand('mouse 0')
-  Isaac.ExecuteCommand('debug 3')
-  Isaac.ExecuteCommand('debug 8')
-end
-
 ---Whether `object1` is the same as `object2`.
 ---Compares their pointer hash to perform the equality check.
 ---@param object1 any
@@ -440,5 +375,70 @@ mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.PostPlayerInit)
 -- Only debug code from here on
 if not debug then return end
 
-mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.SetUpDebug)
+function mod:DebugGiveLemegeton(player)
+  if not player:HasCollectible(CollectibleType.COLLECTIBLE_LEMEGETON) then
+    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
+  end
+end
+
+function mod:SetUpDebug()
+  local numPlayers = game:GetNumPlayers()
+  for playerIndex = 0, numPlayers - 1 do
+    local player = game:GetPlayer(playerIndex)
+    player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
+    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
+    -- player:AddCollectible(CollectibleType.COLLECTIBLE_HOURGLASS, 12, true, ActiveSlot.SLOT_SECONDARY)
+    player:AddCollectible(CollectibleType.COLLECTIBLE_SCHOOLBAG)
+    player:AddTrinket(TrinketType.TRINKET_DICE_BAG)
+    -- player:AddPill(PillColor.PILL_BLUE_BLUE)
+  end
+
+  local room = game:GetRoom()
+  local roomCenterPos = room:GetCenterPos()
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,                    -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,            -- Variant
+    roomCenterPos - Vector(40, 0),               -- Position
+    Vector.Zero,                                 -- Velocity
+    nil,                                         -- Parent
+    CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES, -- SubType
+    room:GetSpawnSeed()                          -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,                  -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,          -- Variant
+    roomCenterPos - Vector(80, 0),             -- Position
+    Vector.Zero,                               -- Velocity
+    nil,                                       -- Parent
+    CollectibleType.COLLECTIBLE_DECK_OF_CARDS, -- SubType
+    room:GetSpawnSeed()                        -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,              -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
+    roomCenterPos + Vector(30, 0),         -- Position
+    Vector.Zero,                           -- Velocity
+    nil,                                   -- Parent
+    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
+    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,              -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
+    roomCenterPos + Vector(80, 0),         -- Position
+    Vector.Zero,                           -- Velocity
+    nil,                                   -- Parent
+    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
+    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
+
+  Isaac.ExecuteCommand('keybinds 1')
+  Isaac.ExecuteCommand('consolefade 1')
+  Isaac.ExecuteCommand('pauseonfocuslost 0')
+  Isaac.ExecuteCommand('mouse 0')
+  Isaac.ExecuteCommand('debug 3')
+  Isaac.ExecuteCommand('debug 8')
+end
+
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.DebugGiveLemegeton)
+mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.SetUpDebug)
