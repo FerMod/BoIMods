@@ -111,13 +111,6 @@ local function hasLemegeton(player)
   return player:HasCollectible(CollectibleType.COLLECTIBLE_LEMEGETON)
 end
 
----Whether the player has the *Book Of Virtues* active item.
----@param player EntityPlayer
----@return boolean
-local function hasBookOfVirtues(player)
-  return player:HasCollectible(CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES)
-end
-
 ---Whether the player owns the familiar.
 ---@param player EntityPlayer
 ---@param familiar EntityFamiliar
@@ -289,8 +282,6 @@ function mod:DrawWispCounter(position, wispCount, playerIndex, hasMultiplePlayer
   mod.sprite.Color = mod:PlayerWispColor(playerIndex)
   mod.sprite:Render(position + iconOffset)
 
-  -- local position = mod:UpdateCounterPosition(player)
-
   local fontOffset = Vector(iconOffset.X + 6, 0)
   mod:DrawWispCountText(wispCount, mod.maxWisps, position + fontOffset)
 
@@ -311,18 +302,6 @@ function mod:UpdateWispCount(player)
   end
   mod.wispCount[GetPtrHash(player)] = wispCount
   return wispCount
-end
-
----Updates and returns the draw position of whisp count.
----@param player EntityPlayer
----@return Vector
----@deprecated
-function mod:UpdateCounterPosition(player)
-  local position = mod:GetPosition()
-  if hasBookOfVirtues(player) then
-    position = mod.positionBookOfVirtues
-  end
-  return position
 end
 
 function mod:OnPostRender()
