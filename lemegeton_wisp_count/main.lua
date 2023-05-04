@@ -6,7 +6,16 @@ local game = Game()
 
 local offsetMultiplier = Vector(20, 12)
 
-mod.position = Vector(-18, -14)
+---The wisp count offset from the defined `alignment`.
+mod.positionOffset = Vector(-18, -14)
+
+---The wisp count display alignment on the screen. The vector `X` and `Y` can
+---take values between 0 and 1.
+---These are some alignments:
+--- * Top-left: (0,0)
+--- * Top-right: (1,0)
+--- * Bottom-left: (0,1)
+--- * Bottom-right: (1,1)
 mod.alignment = Vector(0.5, 1)
 
 ---A table of player pointer hash and the number of wisps that owns that player.
@@ -224,7 +233,7 @@ end
 ---Returns the element position aligned in the screen.
 ---@return Vector
 function mod:GetPosition()
-  local screenPosition = mod.position + mod:GetAlignmentPosition()
+  local screenPosition = mod.positionOffset + mod:GetAlignmentPosition()
   local offsetDirection = mod:GetOffsetDirection()
   return screenPosition + hudOffset(offsetMultiplier * offsetDirection)
 end
