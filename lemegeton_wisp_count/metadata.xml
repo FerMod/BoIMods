@@ -9,7 +9,7 @@ The counter does not show unless a character has the Lemegeton, or owns a wisp o
 
 [quote]You can find the source code [url=https://github.com/FerMod/BoIMods/blob/main/lemegeton_wisp_count]here[/url][/quote]</description>
     <version>1.0.0</version>
-    <visibility>Friends Only</visibility>
+    <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Active Items"/>
     <tag id="Familiars"/>
