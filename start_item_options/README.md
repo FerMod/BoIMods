@@ -14,7 +14,7 @@ These are some of the improvements:
 * In XL floors, the first item room has the item, but the second entered one does not.
 * Fixes items being removed from item rooms.
 
-One drawback of having the items spawned manually, is that you cannot use the Flip active.
+One drawback of having the items spawned manually, is that you cannot use the Flip active with these.
 But in my opinion, the benefits of having the items in the start room outweighs the drawbacks of not being able to make flip to the items.
 
 ## Instalation
