@@ -3,10 +3,12 @@
     <name>Lemegeton Wisp Count</name>
     <directory>lemegeton_wisp_count</directory>
     <id>2966407131</id>
-    <description>This mod adds a counter for the number of wisps spawned by the Lemegeton item.
+    <description>This mod adds a counter with the number of wisps spawned by the Lemegeton active item. When multiple characters are present, the wisp icon color will change and a small number will be shown to indicate to whom belongs the wisps.
+
+The counter does not show unless a character has the Lemegeton, or owns a wisp of the Lemegeton item.
 
 [quote]You can find the source code [url=https://github.com/FerMod/BoIMods/blob/main/lemegeton_wisp_count]here[/url][/quote]</description>
-    <version>0.3.0</version>
+    <version>1.0.0</version>
     <visibility>Friends Only</visibility>
     <tag id="Lua"/>
     <tag id="Active Items"/>
