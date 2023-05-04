@@ -6,14 +6,31 @@ local game = Game()
 
 local offsetMultiplier = Vector(20, 12)
 
-mod.position = Vector(-12, -14)
+---The wisp count offset from the defined `alignment`.
+mod.positionOffset = Vector(-18, -14)
+
+---The wisp count display alignment on the screen. The vector `X` and `Y` can
+---take values between 0 and 1.
+---These are some alignments:
+--- * Top-left: (0,0)
+--- * Top-right: (1,0)
+--- * Bottom-left: (0,1)
+--- * Bottom-right: (1,1)
 mod.alignment = Vector(0.5, 1)
 
+---A table of player pointer hash and the number of wisps that owns that player.
 ---@type table<integer, integer>
 mod.wispCount = {}
 mod.maxWisps = 26
-mod.fontColor = KColor(1, 1, 1, 1)
----@type table<integer, Color>
+
+---The wisp count display font.
+---@type Font?
+mod.font = nil
+mod.fontColor = KColor(1, 1, 1, 1) -- White
+
+---The wisp count display icon sprite.
+---@type Sprite?
+mod.sprite = nil
 mod.playerColorize = {
   Color(0, 0, 0, 0),   -- Default color
   Color(0, 1, 2, 1),   -- Blue
@@ -67,71 +84,6 @@ local function dump(object, indentLevel, indentStr)
   return s .. string.rep(indentStr, indentLevel - 1) .. '}'
 end
 
-function mod:DebugGiveLemegeton(player)
-  if not player:HasCollectible(CollectibleType.COLLECTIBLE_LEMEGETON) then
-    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
-  end
-end
-
-function mod:SetUpDebug()
-  local numPlayers = game:GetNumPlayers()
-  for playerIndex = 0, numPlayers - 1 do
-    local player = game:GetPlayer(playerIndex)
-    player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
-    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
-    -- player:AddCollectible(CollectibleType.COLLECTIBLE_HOURGLASS, 12, true, ActiveSlot.SLOT_SECONDARY)
-    player:AddCollectible(CollectibleType.COLLECTIBLE_SCHOOLBAG)
-    player:AddTrinket(TrinketType.TRINKET_DICE_BAG)
-    -- player:AddPill(PillColor.PILL_BLUE_BLUE)
-  end
-
-  local room = game:GetRoom()
-  local roomCenterPos = room:GetCenterPos()
-  game:Spawn(
-    EntityType.ENTITY_PICKUP,                    -- Type
-    PickupVariant.PICKUP_COLLECTIBLE,            -- Variant
-    roomCenterPos - Vector(40, 0),               -- Position
-    Vector.Zero,                                 -- Velocity
-    nil,                                         -- Parent
-    CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES, -- SubType
-    room:GetSpawnSeed()                          -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
-  )
-  game:Spawn(
-    EntityType.ENTITY_PICKUP,                  -- Type
-    PickupVariant.PICKUP_COLLECTIBLE,          -- Variant
-    roomCenterPos - Vector(80, 0),             -- Position
-    Vector.Zero,                               -- Velocity
-    nil,                                       -- Parent
-    CollectibleType.COLLECTIBLE_DECK_OF_CARDS, -- SubType
-    room:GetSpawnSeed()                        -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
-  )
-  game:Spawn(
-    EntityType.ENTITY_PICKUP,              -- Type
-    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
-    roomCenterPos + Vector(30, 0),         -- Position
-    Vector.Zero,                           -- Velocity
-    nil,                                   -- Parent
-    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
-    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
-  )
-  game:Spawn(
-    EntityType.ENTITY_PICKUP,              -- Type
-    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
-    roomCenterPos + Vector(80, 0),         -- Position
-    Vector.Zero,                           -- Velocity
-    nil,                                   -- Parent
-    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
-    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
-  )
-
-  Isaac.ExecuteCommand('keybinds 1')
-  Isaac.ExecuteCommand('consolefade 1')
-  Isaac.ExecuteCommand('pauseonfocuslost 0')
-  Isaac.ExecuteCommand('mouse 0')
-  Isaac.ExecuteCommand('debug 3')
-  Isaac.ExecuteCommand('debug 8')
-end
-
 ---Whether `object1` is the same as `object2`.
 ---Compares their pointer hash to perform the equality check.
 ---@param object1 any
@@ -168,13 +120,6 @@ local function hasLemegeton(player)
   return player:HasCollectible(CollectibleType.COLLECTIBLE_LEMEGETON)
 end
 
----Whether the player has the *Book Of Virtues* active item.
----@param player EntityPlayer
----@return boolean
-local function hasBookOfVirtues(player)
-  return player:HasCollectible(CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES)
-end
-
 ---Whether the player owns the familiar.
 ---@param player EntityPlayer
 ---@param familiar EntityFamiliar
@@ -206,7 +151,7 @@ local function hudOffset(multiplier)
 end
 
 ---Whether the Font or Sprite is not `nil` and is loaded.
----@param resource Font | Sprite
+---@param resource (Font | Sprite)?
 local function isLoaded(resource)
   if not resource then
     return false
@@ -288,7 +233,7 @@ end
 ---Returns the element position aligned in the screen.
 ---@return Vector
 function mod:GetPosition()
-  local screenPosition = mod.position + mod:GetAlignmentPosition()
+  local screenPosition = mod.positionOffset + mod:GetAlignmentPosition()
   local offsetDirection = mod:GetOffsetDirection()
   return screenPosition + hudOffset(offsetMultiplier * offsetDirection)
 end
@@ -346,8 +291,6 @@ function mod:DrawWispCounter(position, wispCount, playerIndex, hasMultiplePlayer
   mod.sprite.Color = mod:PlayerWispColor(playerIndex)
   mod.sprite:Render(position + iconOffset)
 
-  -- local position = mod:UpdateCounterPosition(player)
-
   local fontOffset = Vector(iconOffset.X + 6, 0)
   mod:DrawWispCountText(wispCount, mod.maxWisps, position + fontOffset)
 
@@ -370,18 +313,6 @@ function mod:UpdateWispCount(player)
   return wispCount
 end
 
----Updates and returns the draw position of whisp count.
----@param player EntityPlayer
----@return Vector
----@deprecated
-function mod:UpdateCounterPosition(player)
-  local position = mod:GetPosition()
-  if hasBookOfVirtues(player) then
-    position = mod.positionBookOfVirtues
-  end
-  return position
-end
-
 function mod:OnPostRender()
   if not isHudVisible() then return end
   if not isLoaded(mod.font) then return end
@@ -397,20 +328,6 @@ function mod:OnPostRender()
     local wispCount = mod:UpdateWispCount(player)
 
     if wispCount then
-      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum)
-      -- currentOffset = currentOffset + Vector(0, -10)
-
-      -- mod:ChangeSpriteColor(playerNum + 1)
-      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum + 1)
-      -- currentOffset = currentOffset + Vector(0, -10)
-
-      -- mod:ChangeSpriteColor(playerNum + 2)
-      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum + 2)
-      -- currentOffset = currentOffset + Vector(0, -10)
-
-      -- mod:ChangeSpriteColor(playerNum + 3)
-      -- mod:DrawWispCounter(position + currentOffset, wispCount, playerNum + 3)
-      -- currentOffset = currentOffset + Vector(0, -10)
       local position = mod:GetPosition()
       mod:DrawWispCounter(position + currentOffset, wispCount, playerIndex, hasMultiplePlayers)
       currentOffset = currentOffset + Vector(0, -10)
@@ -421,14 +338,14 @@ end
 ---Load the font.
 function mod:LoadFont()
   if isLoaded(mod.font) then return end
-  mod.font = Font()
+  mod.font = mod.font or Font()
   mod.font:Load("font/luaminioutlined.fnt")
 end
 
 ---Load the wisp sprite.
 function mod:LoadSprite()
   if isLoaded(mod.sprite) then return end
-  mod.sprite = Sprite()
+  mod.sprite = mod.sprite or Sprite()
   mod.sprite:Load("gfx/wisp.anm2", true)
   mod.sprite.Scale = Vector(0.5, 0.5)
 end
@@ -443,7 +360,73 @@ end
 mod:AddCallback(ModCallbacks.MC_POST_RENDER, mod.OnPostRender)
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.PostPlayerInit)
 
-if debug then
-  mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.SetUpDebug)
-  mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.DebugGiveLemegeton)
+-- Only debug code from here on
+if not debug then return end
+
+function mod:DebugGiveLemegeton(player)
+  if not player:HasCollectible(CollectibleType.COLLECTIBLE_LEMEGETON) then
+    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
+  end
 end
+
+function mod:SetUpDebug()
+  local numPlayers = game:GetNumPlayers()
+  for playerIndex = 0, numPlayers - 1 do
+    local player = game:GetPlayer(playerIndex)
+    player:AddCollectible(CollectibleType.COLLECTIBLE_GNAWED_LEAF)
+    player:AddCollectible(CollectibleType.COLLECTIBLE_LEMEGETON, 12)
+    -- player:AddCollectible(CollectibleType.COLLECTIBLE_HOURGLASS, 12, true, ActiveSlot.SLOT_SECONDARY)
+    player:AddCollectible(CollectibleType.COLLECTIBLE_SCHOOLBAG)
+    player:AddTrinket(TrinketType.TRINKET_DICE_BAG)
+    -- player:AddPill(PillColor.PILL_BLUE_BLUE)
+  end
+
+  local room = game:GetRoom()
+  local roomCenterPos = room:GetCenterPos()
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,                    -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,            -- Variant
+    roomCenterPos - Vector(40, 0),               -- Position
+    Vector.Zero,                                 -- Velocity
+    nil,                                         -- Parent
+    CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES, -- SubType
+    room:GetSpawnSeed()                          -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,                  -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,          -- Variant
+    roomCenterPos - Vector(80, 0),             -- Position
+    Vector.Zero,                               -- Velocity
+    nil,                                       -- Parent
+    CollectibleType.COLLECTIBLE_DECK_OF_CARDS, -- SubType
+    room:GetSpawnSeed()                        -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,              -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
+    roomCenterPos + Vector(30, 0),         -- Position
+    Vector.Zero,                           -- Velocity
+    nil,                                   -- Parent
+    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
+    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
+  game:Spawn(
+    EntityType.ENTITY_PICKUP,              -- Type
+    PickupVariant.PICKUP_COLLECTIBLE,      -- Variant
+    roomCenterPos + Vector(80, 0),         -- Position
+    Vector.Zero,                           -- Velocity
+    nil,                                   -- Parent
+    CollectibleType.COLLECTIBLE_LEMEGETON, -- SubType
+    room:GetSpawnSeed()                    -- Seed ('GetSpawnSeed' function gets a reproducible seed based on the room)
+  )
+
+  Isaac.ExecuteCommand('keybinds 1')
+  Isaac.ExecuteCommand('consolefade 1')
+  Isaac.ExecuteCommand('pauseonfocuslost 0')
+  Isaac.ExecuteCommand('mouse 0')
+  Isaac.ExecuteCommand('debug 3')
+  Isaac.ExecuteCommand('debug 8')
+end
+
+mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.DebugGiveLemegeton)
+mod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, mod.SetUpDebug)
