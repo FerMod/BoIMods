@@ -9,7 +9,7 @@ In my opinion, the player should still have some control over his run even when 
 
 [quote]You can find the source code [url=https://github.com/FerMod/BoIMods/blob/main/no_broken_mirror_death]here[/url][/quote]</description>
     <version>1.0.0</version>
-    <visibility>Friends Only</visibility>
+    <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Rooms"/>
     <tag id="Floors"/>
