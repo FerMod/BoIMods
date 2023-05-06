@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <name>Mod Testing</name>
+    <directory>test</directory>
+    <id>0</id>
+    <description>This mod is only used for testing purposes.
+
+[quote]You can find the source code [url=https://github.com/FerMod/BoIMods/]here[/url][/quote]</description>
+    <version>0.1.0</version>
+    <visibility>Private</visibility>
+    <tag id="Lua"/>
+</metadata>
