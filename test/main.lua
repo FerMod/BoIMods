@@ -4,7 +4,6 @@
 local mod = RegisterMod("Mod Testing", 1)
 local game = Game()
 
-
 ---Enables debug features like printing with `debugPrint`.
 local debug = false
 if not debug then return end
