@@ -19,7 +19,7 @@ function mod:PostUpdate()
   if not isMirrorDimensionMirrorBroken(level) then return end
   level:SetStateFlag(LevelStateFlag.STATE_MIRROR_BROKEN, false)
   game:GetHUD():ShowFortuneText('You fucked up', '. . .')
-  game:ShowHallucination(100, BackdropType.DOWNPOUR)
+  game:ShowHallucination(100, level:GetCurrentRoom():GetBackdropType())
 end
 
 mod:AddCallback(ModCallbacks.MC_POST_UPDATE, mod.PostUpdate)

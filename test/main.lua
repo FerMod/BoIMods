@@ -186,6 +186,7 @@ function mod:PostGameStarted()
   self:TeleportPlayer()
 
   Isaac.GetPlayer():AddCollectible(CollectibleType.COLLECTIBLE_PYRO);
+  Isaac.GetPlayer():RemoveCollectible(CollectibleType.COLLECTIBLE_PYRO);
 end
 
 -- mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.DebugGiveLemegeton)
