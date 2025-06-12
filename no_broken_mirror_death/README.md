@@ -1,6 +1,6 @@
 # No Broken Mirror Death
 
-This mod prevents the game to mercilessly kill the player when the mirror inside the mirror dimension is broken.
+This mod prevents the game from mercilessly killing the player when the mirror inside the mirror dimension is broken.
 
 In my opinion, the player should still have some control over his run even when breaking the mirror.
 I like the idea of getting stuck in the dimension, but not that the player is forced to die.

@@ -9,7 +9,7 @@ A repository containing mods made in lua for The Binding of Isaac:
 - **[Improved Creep Visibility](https://steamcommunity.com/sharedfiles/filedetails/?id=2970129915) ‒** *[source](improved_creep_visibility)*  
     Changes how the creep is displayed in some of the levels to increase the visibility against same color floors.
 - **[No Broken Mirror Death](https://steamcommunity.com/sharedfiles/filedetails/?id=2972317006) ‒** *[source](no_broken_mirror_death)*  
-    Prevents the game to kill the player when in the mirror dimension.
+    Prevents the game from mercilessly killing the player when the mirror inside the mirror dimension is broken.
 
 ## License
 
